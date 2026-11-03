@@ -42,3 +42,10 @@
   font-size: var(--font-size-display);
   line-height: var(--line-height-tight);
 }
+
+.preview-paid {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}

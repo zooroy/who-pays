@@ -15,8 +15,9 @@
     radial-gradient(circle at 100% var(--ticket-notch-y), transparent var(--notch-size), black calc(var(--notch-size) + 0.5px)) right / 51% 100% no-repeat;
 }
 
+/* With a stub, the notches sit on the perforation instead (see below). */
 .ticket:has(.ticket__stub) {
-  --ticket-notch-y: calc(100% - var(--ticket-stub-height, 3.25rem));
+  mask: none;
 }
 
 .ticket--action {
@@ -32,9 +33,30 @@
 }
 
 .ticket__perforation {
-  height: 0;
+  position: relative;
+  height: 2px;
   margin: 0 calc(var(--notch-size) + var(--space-1));
-  border-top: 2px dashed var(--color-punch);
+  background: repeating-linear-gradient(90deg, var(--color-punch) 0 6px, transparent 6px 12px);
+}
+
+/* Punched half-circles, painted in the page color, aligned to the tear line. */
+.ticket__perforation::before,
+.ticket__perforation::after {
+  content: '';
+  position: absolute;
+  top: calc(1px - var(--notch-size));
+  width: calc(var(--notch-size) * 2);
+  height: calc(var(--notch-size) * 2);
+  border-radius: 50%;
+  background: var(--color-ticket-green);
+}
+
+.ticket__perforation::before {
+  left: calc(-2 * var(--notch-size) - var(--space-1));
+}
+
+.ticket__perforation::after {
+  right: calc(-2 * var(--notch-size) - var(--space-1));
 }
 
 .ticket:not(:has(.ticket__stub)) .ticket__perforation {
@@ -44,7 +66,7 @@
 .ticket__stub {
   display: flex;
   align-items: center;
-  min-height: var(--ticket-stub-height, 3.25rem);
+  min-height: 3.25rem;
   padding: var(--space-2) var(--space-5);
 }
 

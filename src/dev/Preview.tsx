@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { MemoryRouter } from 'react-router'
 import {
   AppShell, Avatar, AvatarChoice, AvatarRow, Button, CameraIcon, LinkIcon,
-  Notice, PencilIcon, SelectField, TextField, Ticket, TicketRow,
+  Notice, PaidStamp, PencilIcon, SelectField, TextField, Ticket, TicketRow,
 } from '../components'
 import { AVATAR_IDS, type AvatarId } from '../lib/avatars'
 import { formatMoney } from '../lib/money'
@@ -19,6 +19,7 @@ const SWATCHES = [
 
 export default function Preview() {
   const [picked, setPicked] = useState<AvatarId>('cat')
+  const [paidKey, setPaidKey] = useState(0)
   return (
     <MemoryRouter initialEntries={['/t/demo']}>
       <AppShell
@@ -71,7 +72,7 @@ export default function Preview() {
 
         <section className="preview-section">
           <h2>轉帳票（有票根）</h2>
-          <Ticket stub={<Button variant="secondary">標記已付</Button>}>
+          <Ticket stub={paidKey === 0 ? <Button variant="secondary" onClick={() => setPaidKey(1)}>標記已付</Button> : <span className="preview-paid"><PaidStamp key={paidKey} date="11/03" animate /><Button variant="quiet" onClick={() => setPaidKey((k) => k + 1)}>再蓋一次</Button></span>}>
             <TicketRow
               leading={<span className="preview-transfer"><Avatar avatarId="cat" size="small" decorative /> → <Avatar avatarId="bear" size="small" decorative /></span>}
               title="貓 付給 熊"
