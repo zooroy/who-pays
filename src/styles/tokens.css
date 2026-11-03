@@ -1,0 +1,66 @@
+/*
+ * 車票與印章 design tokens (design.md §8).
+ * Every color, size and font in the app comes from here. Do not add new ones in components.
+ */
+
+@font-face {
+  font-family: 'jf-openhuninn';
+  src: url('../assets/fonts/jf-openhuninn-2.1.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Palette */
+  --color-ticket-green: #e3eee8; /* 車票綠: app background */
+  --color-ticket-paper: #fafcfb; /* 票面白: ticket cards, inputs */
+  --color-ink: #22385c; /* 靛藍墨: text, amounts, primary actions */
+  --color-ink-soft: #5a6b63; /* 次要墨: secondary text (5.5:1 on paper) */
+  --color-stamp: #c8323c; /* 朱肉紅: the 已付 stamp only */
+  --color-punch: #9aa8a1; /* 剪票灰: perforations, rules, disabled — never body text */
+
+  /* Derived, still from the palette */
+  --color-ink-pressed: color-mix(in srgb, var(--color-ink) 85%, black);
+  --color-punch-faint: color-mix(in srgb, var(--color-punch) 35%, var(--color-ticket-paper));
+  --color-focus: var(--color-ink);
+
+  /* Type: one family; hierarchy by size and weight. Ratio 1.25 on a 16px base. */
+  --font-family: 'jf-openhuninn', 'PingFang TC', 'Noto Sans TC', system-ui, sans-serif;
+  --font-size-small: 0.8rem; /* 12.8px: meta lines */
+  --font-size-body: 1rem; /* 16px */
+  --font-size-large: 1.25rem; /* 20px: amounts in lists, section titles */
+  --font-size-title: 1.5625rem; /* 25px: trip name */
+  --font-size-display: 2.441rem; /* 39px: the one big amount on a screen */
+  --line-height-body: 1.55;
+  --line-height-tight: 1.2;
+  --tracking-amount: 0.01em;
+
+  /* Space: 4px grid */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-8: 3rem;
+
+  /* Shape: tickets are square-cornered; only avatars and the round punch notches are round. */
+  --radius-none: 0;
+  --radius-control: 0.375rem; /* inputs and buttons, slightly softened */
+  --notch-size: 0.75rem; /* radius of the punched half-circles on ticket sides */
+  --perforation-gap: 0.5rem;
+
+  /* Layout */
+  --content-max: 30rem;
+  --touch-min: 3rem; /* 48px minimum touch target */
+  --thumb-bar-height: 4.5rem;
+  --tab-bar-height: 3.75rem;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --duration-quick: 120ms;
+  --duration-stamp: 420ms;
+
+  color-scheme: light;
+}

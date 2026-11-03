@@ -1,0 +1,32 @@
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-left: 4px solid var(--color-ink);
+  background: var(--color-ticket-paper);
+}
+
+.notice--check {
+  border-left-style: dashed;
+}
+
+.notice__marker {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  background: var(--color-ink);
+  color: var(--color-ticket-paper);
+  font-size: var(--font-size-small);
+}
+
+.notice__body {
+  flex: 1;
+}
+
+.notice__action {
+  flex: none;
+}

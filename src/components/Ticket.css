@@ -1,0 +1,76 @@
+.ticket {
+  --ticket-notch-y: 50%;
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-none);
+  background: var(--color-ticket-paper);
+  color: inherit;
+  text-align: left;
+  /* Punch a half-circle out of each side at the perforation line. */
+  mask:
+    radial-gradient(circle at 0 var(--ticket-notch-y), transparent var(--notch-size), black calc(var(--notch-size) + 0.5px)) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% var(--ticket-notch-y), transparent var(--notch-size), black calc(var(--notch-size) + 0.5px)) right / 51% 100% no-repeat;
+}
+
+.ticket:has(.ticket__stub) {
+  --ticket-notch-y: calc(100% - var(--ticket-stub-height, 3.25rem));
+}
+
+.ticket--action {
+  cursor: pointer;
+}
+
+.ticket--action:active {
+  background: var(--color-punch-faint);
+}
+
+.ticket__main {
+  padding: var(--space-3) var(--space-5) var(--space-4);
+}
+
+.ticket__perforation {
+  height: 0;
+  margin: 0 calc(var(--notch-size) + var(--space-1));
+  border-top: 2px dashed var(--color-punch);
+}
+
+.ticket:not(:has(.ticket__stub)) .ticket__perforation {
+  display: none;
+}
+
+.ticket__stub {
+  display: flex;
+  align-items: center;
+  min-height: var(--ticket-stub-height, 3.25rem);
+  padding: var(--space-2) var(--space-5);
+}
+
+.ticket-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.ticket-row__text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.ticket-row__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ticket-row__meta {
+  font-size: var(--font-size-small);
+  color: var(--color-ink-soft);
+}
+
+.ticket-row__amount {
+  font-size: var(--font-size-large);
+}

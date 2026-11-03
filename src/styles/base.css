@@ -1,0 +1,90 @@
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  font-family: var(--font-family);
+  font-size: 100%;
+  line-height: var(--line-height-body);
+  color: var(--color-ink);
+  background: var(--color-ticket-green);
+  /* jf open 粉圓 ships one weight; never let the browser fake bold or italic. */
+  font-synthesis: none;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-weight: 400;
+  font-size: var(--font-size-title);
+  line-height: var(--line-height-tight);
+}
+
+h2 {
+  font-weight: 400;
+  font-size: var(--font-size-large);
+  line-height: var(--line-height-tight);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Amounts line up in columns. */
+.amount {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-amount);
+  white-space: nowrap;
+}
+
+.text-soft {
+  color: var(--color-ink-soft);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}

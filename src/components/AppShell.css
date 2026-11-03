@@ -1,0 +1,102 @@
+.app-shell {
+  --bottom-height: 0px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  max-width: var(--content-max);
+  margin: 0 auto;
+}
+
+.app-shell--tabs {
+  --bottom-height: var(--tab-bar-height);
+}
+
+.app-shell--thumb.app-shell--tabs {
+  --bottom-height: calc(var(--tab-bar-height) + var(--thumb-bar-height));
+}
+
+.app-shell__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-4) var(--space-3);
+}
+
+.app-shell__title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-shell__content {
+  flex: 1;
+  padding: var(--space-2) var(--space-4) calc(var(--bottom-height) + var(--space-6));
+}
+
+.app-shell__bottom {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 10;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--color-ticket-green);
+  border-top: 2px dashed var(--color-punch);
+}
+
+.thumb-bar {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-3);
+  align-items: center;
+  height: var(--thumb-bar-height);
+  padding: 0 var(--space-4);
+}
+
+.tab-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: var(--tab-bar-height);
+}
+
+.tab-bar__tab {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  font-size: var(--font-size-small);
+  color: var(--color-ink-soft);
+  text-decoration: none;
+}
+
+.tab-bar__tab.active {
+  color: var(--color-ink);
+}
+
+.tab-bar__tab.active span {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.3em;
+}
+
+.avatar-row {
+  display: flex;
+  flex: none;
+}
+
+.avatar-row > * + * {
+  margin-left: calc(var(--space-2) * -1);
+}
+
+.avatar-row .avatar {
+  box-shadow: 0 0 0 2px var(--color-ticket-green);
+}
+
+.avatar-row .avatar--me {
+  box-shadow:
+    0 0 0 2px var(--color-ticket-green),
+    0 0 0 4px var(--color-ink);
+  z-index: 1;
+}

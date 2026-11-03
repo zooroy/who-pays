@@ -3,8 +3,8 @@
 ## 1. 專案骨架
 
 - [x] 1.1 用 Vite 建立 React + TypeScript 專案，加入 react-router、@tanstack/react-query、supabase-js、vite-plugin-pwa、Vitest，並確認 `npm run dev`、`npm run build`、`npm test` 都能執行
-- [ ] 1.2 執行 `supabase init` 建立 `supabase/` 目錄，用 `supabase start` 啟動本機環境，並確認 Studio 可以開啟
-- [ ] 1.3 建立 `.env.example`（Supabase URL / anon key）與 README 的本機開發步驟，並照 README 從零跑起來一次驗證步驟正確
+- [x] 1.2 執行 `supabase init` 建立 `supabase/` 目錄，用 `supabase start` 啟動本機環境，並確認 Studio 可以開啟
+- [x] 1.3 建立 `.env.example`（Supabase URL / anon key）與 README 的本機開發步驟，並照 README 從零跑起來一次驗證步驟正確
 
 ## 2. 金額與結算核心邏輯
 
@@ -14,18 +14,18 @@
 
 ## 3. 資料庫、權限與 RPC
 
-- [ ] 3.1 撰寫 migration：建立 design 第 3 節的所有資料表、約束（`unique(trip_id, avatar_id)`、金額 > 0、avatar_id 白名單），以 `supabase db reset` 套用成功作為驗證
+- [x] 3.1 撰寫 migration：建立 design 第 3 節的所有資料表、約束（`unique(trip_id, avatar_id)`、金額 > 0、avatar_id 白名單），以 `supabase db reset` 套用成功作為驗證
 - [ ] 3.2 撰寫 RLS：所有資料表只允許 `trip_access` 內的使用者存取，並以 SQL 測試驗證沒有 trip_access 的匿名使用者 `select` 結果為空、`insert` 被拒絕
-- [ ] 3.3 實作 RPC `create_trip`（產生 22 字元 share_token、寫入建立者成員與 trip_access）與 `join_trip(share_token)`；以 SQL 測試驗證無效 token 回傳錯誤、有效 token 加入後即可讀取旅程
-- [ ] 3.4 實作 RPC `upsert_expense(payload)`，在單一 transaction 內寫入支出、分攤者、品項並記錄 updated_by；以 SQL 測試驗證分攤者為空時整筆失敗、不留下殘缺資料
+- [x] 3.3 實作 RPC `create_trip`（產生 22 字元 share_token、寫入建立者成員與 trip_access）與 `join_trip(share_token)`；以 SQL 測試驗證無效 token 回傳錯誤、有效 token 加入後即可讀取旅程
+- [x] 3.4 實作 RPC `upsert_expense(payload)`，在單一 transaction 內寫入支出、分攤者、品項並記錄 updated_by；以 SQL 測試驗證分攤者為空時整筆失敗、不留下殘缺資料
 - [ ] 3.5 建立私有 `receipts` bucket 與依路徑 `trip_id` 判斷 trip_access 的 Storage 政策；驗證他人旅程的照片無法下載
 - [ ] 3.6 將相關資料表加入 Realtime publication，並為 `expense_splits`、`expense_items` 冗餘存放 `trip_id`；用兩個 client 驗證 A 新增支出時 B 能收到事件、無權限的 C 收不到
 
 ## 4. 視覺基礎與頭像庫
 
-- [ ] 4.1 安裝 frontend-design plugin，依 design 第 8 節建立 CSS tokens（五色、jf open 粉圓 woff2、字級階層、tabular numbers），並以一頁 token 預覽頁確認文字對比達 WCAG AA
+- [x] 4.1 安裝 frontend-design plugin，依 design 第 8 節建立 CSS tokens（五色、jf open 粉圓 woff2、字級階層、tabular numbers），並以一頁 token 預覽頁確認文字對比達 WCAG AA
 - [ ] 4.2 以 design 的色票作為 palette，用 ip-as-logo-skill 產生 16 隻吉祥物，轉成 256px webp 放入 `src/assets/avatars/`，建立 `avatar_id → 圖片` 對照表，並確認與 migration 的白名單一致
-- [ ] 4.3 實作共用元件：頭像（含目前使用者外框、已佔用灰化狀態）、票卡（直角、剪票缺口、鋸齒撕線）、底部分頁與拇指區按鈕；在預覽頁截圖檢查 375px 寬度下的呈現
+- [x] 4.3 實作共用元件：頭像（含目前使用者外框、已佔用灰化狀態）、票卡（直角、剪票缺口、鋸齒撕線）、底部分頁與拇指區按鈕；在預覽頁截圖檢查 375px 寬度下的呈現
 
 ## 5. 旅程與成員（trip-membership）
 

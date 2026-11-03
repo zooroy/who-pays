@@ -1,0 +1,65 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  padding: 0 var(--space-4);
+  border: 2px solid var(--color-ink);
+  white-space: nowrap;
+  border-radius: var(--radius-control);
+  font-size: var(--font-size-body);
+  cursor: pointer;
+  transition: background-color var(--duration-quick) var(--ease-out);
+}
+
+.button--primary {
+  background: var(--color-ink);
+  color: var(--color-ticket-paper);
+}
+
+.button--primary:active {
+  background: var(--color-ink-pressed);
+}
+
+.button--secondary {
+  background: var(--color-ticket-paper);
+  color: var(--color-ink);
+}
+
+.button--secondary:active {
+  background: var(--color-punch-faint);
+}
+
+.button--quiet {
+  border-color: transparent;
+  background: none;
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.button--big {
+  min-height: 3.5rem;
+  font-size: var(--font-size-large);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  border-color: var(--color-punch);
+  background: var(--color-punch-faint);
+  color: var(--color-ink-soft);
+}
+
+.button[aria-busy='true'] {
+  cursor: progress;
+}
+
+.button__icon {
+  display: inline-flex;
+}
+
+.button__icon svg {
+  width: 1.25em;
+  height: 1.25em;
+}
