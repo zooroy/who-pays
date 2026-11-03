@@ -15,10 +15,10 @@
 ## 3. 資料庫、權限與 RPC
 
 - [x] 3.1 撰寫 migration：建立 design 第 3 節的所有資料表、約束（`unique(trip_id, avatar_id)`、金額 > 0、avatar_id 白名單），以 `supabase db reset` 套用成功作為驗證
-- [ ] 3.2 撰寫 RLS：所有資料表只允許 `trip_access` 內的使用者存取，並以 SQL 測試驗證沒有 trip_access 的匿名使用者 `select` 結果為空、`insert` 被拒絕
+- [x] 3.2 撰寫 RLS：所有資料表只允許 `trip_access` 內的使用者存取，並以 SQL 測試驗證沒有 trip_access 的匿名使用者 `select` 結果為空、`insert` 被拒絕
 - [x] 3.3 實作 RPC `create_trip`（產生 22 字元 share_token、寫入建立者成員與 trip_access）與 `join_trip(share_token)`；以 SQL 測試驗證無效 token 回傳錯誤、有效 token 加入後即可讀取旅程
 - [x] 3.4 實作 RPC `upsert_expense(payload)`，在單一 transaction 內寫入支出、分攤者、品項並記錄 updated_by；以 SQL 測試驗證分攤者為空時整筆失敗、不留下殘缺資料
-- [ ] 3.5 建立私有 `receipts` bucket 與依路徑 `trip_id` 判斷 trip_access 的 Storage 政策；驗證他人旅程的照片無法下載
+- [x] 3.5 建立私有 `receipts` bucket 與依路徑 `trip_id` 判斷 trip_access 的 Storage 政策；驗證他人旅程的照片無法下載
 - [ ] 3.6 將相關資料表加入 Realtime publication，並為 `expense_splits`、`expense_items` 冗餘存放 `trip_id`；用兩個 client 驗證 A 新增支出時 B 能收到事件、無權限的 C 收不到
 
 ## 4. 視覺基礎與頭像庫
