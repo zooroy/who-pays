@@ -20,7 +20,9 @@ interface AppShellProps {
  */
 export function AppShell({ title, headerExtra, thumbBar, tripPath, children }: AppShellProps) {
   return (
-    <div className={`app-shell${thumbBar ? ' app-shell--thumb' : ''}${tripPath ? ' app-shell--tabs' : ''}`}>
+    <div
+      className={`app-shell${thumbBar ? ' app-shell--thumb' : ''}${tripPath ? ' app-shell--tabs' : ''}`}
+    >
       <header className="app-shell__header">
         <h1 className="app-shell__title">{title}</h1>
         {headerExtra && <div className="app-shell__extra">{headerExtra}</div>}

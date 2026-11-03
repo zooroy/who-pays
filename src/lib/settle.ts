@@ -49,7 +49,8 @@ export function balances(
     }
     return net
   }
-  const add = (net: NetByMember, id: string, delta: number) => net.set(id, (net.get(id) ?? 0) + delta)
+  const add = (net: NetByMember, id: string, delta: number) =>
+    net.set(id, (net.get(id) ?? 0) + delta)
 
   for (const expense of expenses) {
     const net = netFor(expense.currency)
@@ -74,7 +75,10 @@ export function balances(
  * Produces at most n-1 transfers and zeroes every balance. Ties are broken by
  * member order so the suggestion list is stable between renders.
  */
-export function suggestTransfers(net: NetByMember, memberOrder: readonly string[] = [...net.keys()]): Transfer[] {
+export function suggestTransfers(
+  net: NetByMember,
+  memberOrder: readonly string[] = [...net.keys()],
+): Transfer[] {
   const rank = new Map(memberOrder.map((id, index) => [id, index]))
   const byRank = (a: string, b: string) => (rank.get(a) ?? Infinity) - (rank.get(b) ?? Infinity)
 
@@ -83,9 +87,7 @@ export function suggestTransfers(net: NetByMember, memberOrder: readonly string[
   const transfers: Transfer[] = []
 
   const pickLargest = (list: { id: string; left: number }[]) =>
-    list
-      .filter((p) => p.left > 0)
-      .sort((a, b) => b.left - a.left || byRank(a.id, b.id))[0]
+    list.filter((p) => p.left > 0).sort((a, b) => b.left - a.left || byRank(a.id, b.id))[0]
 
   for (;;) {
     const debtor = pickLargest(debtors)

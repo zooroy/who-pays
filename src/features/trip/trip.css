@@ -1,9 +1,33 @@
-.trip-stack { display: grid; gap: var(--space-5); }
-.trip-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
-.trip-avatars { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-2); }
-.trip-fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
-.trip-fieldset legend { margin-bottom: var(--space-3); }
-.trip-member { display: flex; align-items: center; gap: var(--space-3); }
-.trip-members { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-3); }
-.trip-header-members { border: 0; padding: var(--space-2); background: transparent; cursor: pointer; max-width: calc(var(--content-max) / 2); overflow: auto; min-height: var(--touch-min); }
-.trip-empty { padding-block: var(--space-6); }
+.trip-stack {
+  display: grid;
+  gap: var(--space-5);
+}
+.trip-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.trip-member {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.trip-members {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+.trip-header-members {
+  border: 0;
+  padding: var(--space-2);
+  background: transparent;
+  cursor: pointer;
+  max-width: calc(var(--content-max) / 2);
+  overflow: auto;
+  min-height: var(--touch-min);
+}
+.trip-empty {
+  padding-block: var(--space-6);
+}

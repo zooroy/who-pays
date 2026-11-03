@@ -1,8 +1,20 @@
 import { useState } from 'react'
 import { MemoryRouter } from 'react-router'
 import {
-  AppShell, Avatar, AvatarChoice, AvatarRow, Button, CameraIcon, LinkIcon,
-  Notice, PaidStamp, PencilIcon, SelectField, TextField, Ticket, TicketRow,
+  AppShell,
+  Avatar,
+  AvatarChoice,
+  AvatarRow,
+  Button,
+  CameraIcon,
+  LinkIcon,
+  Notice,
+  PaidStamp,
+  PencilIcon,
+  SelectField,
+  TextField,
+  Ticket,
+  TicketRow,
 } from '../components'
 import { AVATAR_IDS, type AvatarId } from '../lib/avatars'
 import { formatMoney } from '../lib/money'
@@ -35,8 +47,12 @@ export default function Preview() {
         }
         thumbBar={
           <>
-            <Button variant="secondary" icon={<PencilIcon />}>手動新增</Button>
-            <Button big icon={<CameraIcon />}>拍收據</Button>
+            <Button variant="secondary" icon={<PencilIcon />}>
+              手動新增
+            </Button>
+            <Button big icon={<CameraIcon />}>
+              拍收據
+            </Button>
           </>
         }
       >
@@ -72,9 +88,29 @@ export default function Preview() {
 
         <section className="preview-section">
           <h2>轉帳票（有票根）</h2>
-          <Ticket stub={paidKey === 0 ? <Button variant="secondary" onClick={() => setPaidKey(1)}>標記已付</Button> : <span className="preview-paid"><PaidStamp key={paidKey} date="11/03" animate /><Button variant="quiet" onClick={() => setPaidKey((k) => k + 1)}>再蓋一次</Button></span>}>
+          <Ticket
+            stub={
+              paidKey === 0 ? (
+                <Button variant="secondary" onClick={() => setPaidKey(1)}>
+                  標記已付
+                </Button>
+              ) : (
+                <span className="preview-paid">
+                  <PaidStamp key={paidKey} date="11/03" animate />
+                  <Button variant="quiet" onClick={() => setPaidKey((k) => k + 1)}>
+                    再蓋一次
+                  </Button>
+                </span>
+              )
+            }
+          >
             <TicketRow
-              leading={<span className="preview-transfer"><Avatar avatarId="cat" size="small" decorative /> → <Avatar avatarId="bear" size="small" decorative /></span>}
+              leading={
+                <span className="preview-transfer">
+                  <Avatar avatarId="cat" size="small" decorative /> →{' '}
+                  <Avatar avatarId="bear" size="small" decorative />
+                </span>
+              }
               title="貓 付給 熊"
               amount={formatMoney(4200, 'JPY')}
             />
@@ -100,7 +136,9 @@ export default function Preview() {
               <option value="JPY">日圓 ¥</option>
               <option value="TWD">新台幣 NT$</option>
             </SelectField>
-            <Button icon={<LinkIcon />} variant="secondary">複製旅程連結</Button>
+            <Button icon={<LinkIcon />} variant="secondary">
+              複製旅程連結
+            </Button>
             <Button disabled>儲存支出</Button>
           </div>
         </section>
@@ -109,7 +147,13 @@ export default function Preview() {
           <h2>選一個角色</h2>
           <div className="preview-avatars">
             {AVATAR_IDS.map((id) => (
-              <AvatarChoice key={id} avatarId={id} selected={picked === id} taken={id === 'bear' || id === 'penguin'} onSelect={setPicked} />
+              <AvatarChoice
+                key={id}
+                avatarId={id}
+                selected={picked === id}
+                taken={id === 'bear' || id === 'penguin'}
+                onSelect={setPicked}
+              />
             ))}
           </div>
         </section>

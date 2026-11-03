@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { clearIdentity, hasErrorCode, membershipError, readIdentity, saveIdentity } from './identity'
+import {
+  clearIdentity,
+  hasErrorCode,
+  membershipError,
+  readIdentity,
+  saveIdentity,
+} from './identity'
 
 afterEach(() => vi.unstubAllGlobals())
 describe('旅程身份', () => {

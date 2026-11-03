@@ -17,6 +17,8 @@ export function ensureSession(): Promise<void> {
       const result = await supabase.auth.signInAnonymously()
       if (result.error) throw result.error
     }
-  })().finally(() => { signingIn = undefined })
+  })().finally(() => {
+    signingIn = undefined
+  })
   return signingIn
 }

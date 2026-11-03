@@ -15,7 +15,13 @@ interface AvatarProps {
 }
 
 /** A member's mascot. In lists the avatar stands in for the person's name. */
-export function Avatar({ avatarId, size = 'medium', isMe = false, label, decorative = false }: AvatarProps) {
+export function Avatar({
+  avatarId,
+  size = 'medium',
+  isMe = false,
+  label,
+  decorative = false,
+}: AvatarProps) {
   const avatar = AVATARS[avatarId]
   const name = label ?? avatar.name
   return (
@@ -29,7 +35,10 @@ export function Avatar({ avatarId, size = 'medium', isMe = false, label, decorat
       {avatar.image ? (
         <img className="avatar__image" src={avatar.image} alt="" draggable={false} />
       ) : (
-        <span className={`avatar__placeholder${avatar.glyph.length > 1 ? ' avatar__placeholder--pair' : ''}`} aria-hidden="true">
+        <span
+          className={`avatar__placeholder${avatar.glyph.length > 1 ? ' avatar__placeholder--pair' : ''}`}
+          aria-hidden="true"
+        >
           {avatar.glyph}
         </span>
       )}

@@ -15,7 +15,9 @@ interface NoticeProps {
 export function Notice({ tone = 'check', children, action }: NoticeProps) {
   return (
     <div className={`notice notice--${tone}`} role={tone === 'problem' ? 'alert' : 'status'}>
-      <span className="notice__marker" aria-hidden="true">{tone === 'problem' ? '!' : '?'}</span>
+      <span className="notice__marker" aria-hidden="true">
+        {tone === 'problem' ? '!' : '?'}
+      </span>
       <div className="notice__body">{children}</div>
       {action && <div className="notice__action">{action}</div>}
     </div>

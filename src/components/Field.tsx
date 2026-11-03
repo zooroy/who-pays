@@ -15,10 +15,20 @@ function FieldShell({ label, hint, error, children }: FieldShellProps) {
   const describedBy = [hintId, errorId].filter(Boolean).join(' ') || undefined
   return (
     <div className={`field${error ? ' field--error' : ''}`}>
-      <label className="field__label" htmlFor={id}>{label}</label>
+      <label className="field__label" htmlFor={id}>
+        {label}
+      </label>
       {children({ id, describedBy })}
-      {hint && <p id={hintId} className="field__hint">{hint}</p>}
-      {error && <p id={errorId} className="field__error" role="alert">{error}</p>}
+      {hint && (
+        <p id={hintId} className="field__hint">
+          {hint}
+        </p>
+      )}
+      {error && (
+        <p id={errorId} className="field__error" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   )
 }
@@ -33,7 +43,13 @@ export function TextField({ label, hint, error, className, ...input }: TextField
   return (
     <FieldShell label={label} hint={hint} error={error}>
       {({ id, describedBy }) => (
-        <input {...input} id={id} className={`field__control${className ? ` ${className}` : ''}`} aria-invalid={error ? true : undefined} aria-describedby={describedBy} />
+        <input
+          {...input}
+          id={id}
+          className={`field__control${className ? ` ${className}` : ''}`}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy}
+        />
       )}
     </FieldShell>
   )
@@ -49,7 +65,13 @@ export function SelectField({ label, hint, error, children, ...select }: SelectF
   return (
     <FieldShell label={label} hint={hint} error={error}>
       {({ id, describedBy }) => (
-        <select {...select} id={id} className="field__control" aria-invalid={error ? true : undefined} aria-describedby={describedBy}>
+        <select
+          {...select}
+          id={id}
+          className="field__control"
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy}
+        >
           {children}
         </select>
       )}

@@ -112,9 +112,10 @@
 
 ### 6. 即時同步
 
-每個旅程頁面訂閱一個 channel，監聽 `expenses`、`expense_splits`、`expense_items`、`settlements`、`members` 這幾張表、以 `trip_id=eq.<id>` 過濾的變更（子表沒有 `trip_id`，所以 `expense_*` 監聽後由前端判斷）。收到事件時不在本地套用 diff，而是讓 react-query 失效重抓該旅程的完整資料。資料量小，這樣做最簡單，也不會出錯。
+每個旅程頁面訂閱一個 channel，監聽 `members`、`expenses`、`expense_splits`、`expense_items`、`settlements` 的變更。收到事件時不在本地套用 diff，而是讓 react-query 失效、重抓該旅程的完整資料。資料量小，這樣做最簡單，也不會出錯。
 
-為了讓子表能以 `trip_id` 過濾，`expense_splits` 與 `expense_items` 也冗餘存一份 `trip_id`。
+- **INSERT／UPDATE**：以 `trip_id=eq.<id>` 過濾。為此 `expense_splits` 與 `expense_items` 也冗餘存一份 `trip_id`。
+- **DELETE**：Supabase 無法依欄位過濾刪除事件，也不對刪除事件套用 RLS，所以 `expenses` 與 `settlements` 的刪除改為不加過濾地訂閱，收到任何刪除就重抓目前的旅程。子表跟著支出 cascade 刪除，不需要另外監聽。實作時以 `scripts/realtime-delete-check.ts` 驗證過，加上過濾條件會完全收不到刪除事件。
 
 ### 7. 收據辨識流程
 
@@ -243,6 +244,7 @@
 - [收據影像可能被 Google 用於改進產品] → 在 proposal 載明；未來如果在意，可改用付費方案或其他模型，介面維持 ReceiptResult 不變。
 - [任何拿到連結的人都能讀寫，成員也能冒用他人身份] → 這是刻意的取捨；不要把連結貼到公開場合。
 - [匿名登入使用者會不斷累積在 auth 資料表] → 規模小，可以忽略。
+- [刪除事件不受 RLS 限制，其他旅程的使用者也會收到] → 事件內容只有被刪除列的 id（預設 replica identity），不含金額、名稱等內容；代價是偶爾多一次重抓。
 - [貪婪法不保證轉帳筆數全域最少] → 筆數上限為 n-1，對朋友出遊的規模已足夠。
 - [CJK 字體檔大，第一次載入慢] → 字體 swap 加上 service worker 快取；第二次之後就是即時載入。
 - [網路不穩時新增支出失敗] → 送出失敗時保留表單內容，並提供重試；不做離線佇列。

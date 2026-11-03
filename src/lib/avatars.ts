@@ -9,8 +9,22 @@
  */
 
 export const AVATAR_IDS = [
-  'bear', 'cat', 'penguin', 'fox', 'rabbit', 'dog', 'panda', 'koala',
-  'owl', 'frog', 'tiger', 'otter', 'hamster', 'deer', 'seal', 'duck',
+  'bear',
+  'cat',
+  'penguin',
+  'fox',
+  'rabbit',
+  'dog',
+  'panda',
+  'koala',
+  'owl',
+  'frog',
+  'tiger',
+  'otter',
+  'hamster',
+  'deer',
+  'seal',
+  'duck',
 ] as const
 
 export type AvatarId = (typeof AVATAR_IDS)[number]
@@ -50,7 +64,15 @@ const images = import.meta.glob<string>('../assets/avatars/*.webp', {
 })
 
 export const AVATARS: Record<AvatarId, AvatarInfo> = Object.fromEntries(
-  AVATAR_IDS.map((id) => [id, { id, ...INFO[id], glyph: INFO[id].glyph ?? INFO[id].name.slice(0, 1), image: images[`../assets/avatars/${id}.webp`] }]),
+  AVATAR_IDS.map((id) => [
+    id,
+    {
+      id,
+      ...INFO[id],
+      glyph: INFO[id].glyph ?? INFO[id].name.slice(0, 1),
+      image: images[`../assets/avatars/${id}.webp`],
+    },
+  ]),
 ) as Record<AvatarId, AvatarInfo>
 
 export function isAvatarId(value: unknown): value is AvatarId {

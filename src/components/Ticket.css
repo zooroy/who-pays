@@ -11,8 +11,18 @@
   text-align: left;
   /* Punch a half-circle out of each side at the perforation line. */
   mask:
-    radial-gradient(circle at 0 var(--ticket-notch-y), transparent var(--notch-size), black calc(var(--notch-size) + 0.5px)) left / 51% 100% no-repeat,
-    radial-gradient(circle at 100% var(--ticket-notch-y), transparent var(--notch-size), black calc(var(--notch-size) + 0.5px)) right / 51% 100% no-repeat;
+    radial-gradient(
+        circle at 0 var(--ticket-notch-y),
+        transparent var(--notch-size),
+        black calc(var(--notch-size) + 0.5px)
+      )
+      left / 51% 100% no-repeat,
+    radial-gradient(
+        circle at 100% var(--ticket-notch-y),
+        transparent var(--notch-size),
+        black calc(var(--notch-size) + 0.5px)
+      )
+      right / 51% 100% no-repeat;
 }
 
 /* With a stub, the notches sit on the perforation instead (see below). */

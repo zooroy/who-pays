@@ -1,0 +1,4 @@
+dist
+supabase/
+openspec/
+*.md

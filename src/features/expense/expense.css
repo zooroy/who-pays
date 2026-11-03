@@ -1,0 +1,44 @@
+.expense-fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.expense-fieldset legend {
+  margin-bottom: var(--space-3);
+}
+.expense-choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+.expense-choice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  min-height: var(--touch-min);
+  border: 1px solid var(--color-punch);
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.expense-choice:has(input:checked) {
+  background: var(--color-ticket-paper);
+  border-color: var(--color-ink);
+}
+.expense-choice input {
+  accent-color: var(--color-ink);
+}
+.expense-translation {
+  display: block;
+  color: var(--color-ink-soft);
+  font-size: var(--font-size-body);
+}
+.expense-total {
+  font-size: var(--font-size-display);
+}
+.expense-receipt {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
