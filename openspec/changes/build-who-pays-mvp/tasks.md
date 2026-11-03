@@ -19,7 +19,7 @@
 - [x] 3.3 實作 RPC `create_trip`（產生 22 字元 share_token、寫入建立者成員與 trip_access）與 `join_trip(share_token)`；以 SQL 測試驗證無效 token 回傳錯誤、有效 token 加入後即可讀取旅程
 - [x] 3.4 實作 RPC `upsert_expense(payload)`，在單一 transaction 內寫入支出、分攤者、品項並記錄 updated_by；以 SQL 測試驗證分攤者為空時整筆失敗、不留下殘缺資料
 - [x] 3.5 建立私有 `receipts` bucket 與依路徑 `trip_id` 判斷 trip_access 的 Storage 政策；驗證他人旅程的照片無法下載
-- [ ] 3.6 將相關資料表加入 Realtime publication，並為 `expense_splits`、`expense_items` 冗餘存放 `trip_id`；用兩個 client 驗證 A 新增支出時 B 能收到事件、無權限的 C 收不到
+- [x] 3.6 將相關資料表加入 Realtime publication，並為 `expense_splits`、`expense_items` 冗餘存放 `trip_id`；用兩個 client 驗證 A 新增支出時 B 能收到事件、無權限的 C 收不到
 
 ## 4. 視覺基礎與頭像庫
 
@@ -29,11 +29,11 @@
 
 ## 5. 旅程與成員（trip-membership）
 
-- [ ] 5.1 啟動時自動執行 anonymous sign-in 並保留 session；驗證重新整理後 `auth.uid()` 不變
-- [ ] 5.2 實作建立旅程頁（名稱、主要貨幣、頭像），完成後導向 `/t/<share_token>`；驗證名稱為空時不送出並顯示提示
-- [ ] 5.3 實作 `/t/<share_token>` 進入流程：無效連結顯示找不到旅程；已有 localStorage 身份時直接進入；否則顯示加入畫面
-- [ ] 5.4 實作加入畫面：輸入名字並選擇頭像，或認領既有成員；已佔用的頭像不可選，滿 16 人時只能認領；驗證兩個瀏覽器同時搶同一頭像時，後到者看到「已被選走」
-- [ ] 5.5 實作複製分享連結、成員列表、新增佔位成員、切換身份；驗證佔位成員建立後立即可被選為付款人
+- [x] 5.1 啟動時自動執行 anonymous sign-in 並保留 session；驗證重新整理後 `auth.uid()` 不變
+- [x] 5.2 實作建立旅程頁（名稱、主要貨幣、頭像），完成後導向 `/t/<share_token>`；驗證名稱為空時不送出並顯示提示
+- [x] 5.3 實作 `/t/<share_token>` 進入流程：無效連結顯示找不到旅程；已有 localStorage 身份時直接進入；否則顯示加入畫面
+- [x] 5.4 實作加入畫面：輸入名字並選擇頭像，或認領既有成員；已佔用的頭像不可選，滿 16 人時只能認領；驗證兩個瀏覽器同時搶同一頭像時，後到者看到「已被選走」
+- [x] 5.5 實作複製分享連結、成員列表、新增佔位成員、切換身份；驗證佔位成員建立後立即可被選為付款人
 
 ## 6. 記帳（expense-tracking）
 
