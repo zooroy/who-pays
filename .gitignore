@@ -31,3 +31,6 @@ dist-ssr
 # supabase
 supabase/.branches
 supabase/.temp
+
+# Real receipt photos for manual parse-receipt checks (personal data; never commit)
+test-receipts/

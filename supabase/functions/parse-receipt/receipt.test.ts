@@ -22,8 +22,9 @@ describe('parseRequest', () => {
 })
 
 describe('upstreamError', () => {
-  it('maps 429 to QUOTA_EXCEEDED and everything else to UPSTREAM_ERROR', () => {
+  it('maps 429 and 402 to QUOTA_EXCEEDED and everything else to UPSTREAM_ERROR', () => {
     expect(upstreamError(429)).toBe('QUOTA_EXCEEDED')
+    expect(upstreamError(402)).toBe('QUOTA_EXCEEDED')
     expect(upstreamError(400)).toBe('UPSTREAM_ERROR')
     expect(upstreamError(503)).toBe('UPSTREAM_ERROR')
   })

@@ -93,9 +93,12 @@ export const ERROR_STATUS: Record<ReceiptErrorCode, number> = {
   UPSTREAM_ERROR: 502,
 }
 
-/** Maps a Gemini HTTP status to our error code (design.md §7). */
+/**
+ * Maps a Gemini HTTP status to our error code (design.md §7). 429 is the free-tier
+ * rate limit; 402 is a billed project whose prepaid credits ran out.
+ */
 export function upstreamError(status: number): ReceiptErrorCode {
-  return status === 429 ? 'QUOTA_EXCEEDED' : 'UPSTREAM_ERROR'
+  return status === 429 || status === 402 ? 'QUOTA_EXCEEDED' : 'UPSTREAM_ERROR'
 }
 
 const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
