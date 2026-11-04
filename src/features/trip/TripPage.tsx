@@ -8,6 +8,7 @@ import {
   Button,
   CameraIcon,
   PencilIcon,
+  Ticket,
   Notice,
 } from '../../components'
 import {
@@ -117,6 +118,12 @@ function TripContent({
   const location = useLocation()
   const [memberId, setMemberId] = useState(() => readIdentity(trip.id))
   const [panel, setPanel] = useState<'members' | 'add' | null>(null)
+  // Leaving a page closes the member panel, so it never hides the screen you navigate to.
+  const [panelPath, setPanelPath] = useState(location.pathname)
+  if (panelPath !== location.pathname) {
+    setPanelPath(location.pathname)
+    setPanel(null)
+  }
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState('')
   const me = members.find((m) => m.id === memberId)
@@ -132,6 +139,15 @@ function TripContent({
     const timer = window.setTimeout(() => setCopied(false), 2000)
     return () => window.clearTimeout(timer)
   }, [copied])
+  async function copyLink() {
+    try {
+      await navigator.clipboard.writeText(new URL(path, window.location.origin).href)
+      setCopied(true)
+      setError('')
+    } catch {
+      setError('無法複製連結，請再試一次。')
+    }
+  }
   function claim(id: string) {
     try {
       saveIdentity(trip.id, id)
@@ -231,59 +247,56 @@ function TripContent({
       }
     >
       <div className="trip-stack">
-        <div className="trip-actions">
-          <Button
-            variant="secondary"
-            onClick={async () => {
-              try {
-                await navigator.clipboard.writeText(new URL(path, window.location.origin).href)
-                setCopied(true)
-                setError('')
-              } catch {
-                setError('無法複製連結，請再試一次。')
-              }
-            }}
-          >
-            {copied ? '已複製' : '複製旅程連結'}
-          </Button>
-          <Button variant="secondary" onClick={() => setPanel(panel === 'add' ? null : 'add')}>
-            新增朋友
-          </Button>
-          <Button
-            variant="quiet"
-            onClick={() => {
-              try {
-                clearIdentity(trip.id)
-                setMemberId(null)
-                setPanel(null)
-              } catch {
-                setError('無法清除身份，請確認瀏覽器的儲存空間設定。')
-              }
-            }}
-          >
-            切換身份
-          </Button>
-        </div>
         {error && <Notice tone="problem">{error}</Notice>}
-        {panel && (
-          <section
-            className="trip-stack"
-            aria-label={panel === 'members' ? '成員列表' : '新增朋友'}
-          >
-            <h2>{panel === 'members' ? '成員列表' : '新增朋友'}</h2>
-            {panel === 'members' ? (
-              <ul className="trip-members">
-                {members.map((m) => (
-                  <li key={m.id} className="trip-member">
-                    <Avatar avatarId={m.avatar_id} isMe={m.id === me.id} decorative />
-                    <span>
-                      {m.name}
-                      {m.id === me.id ? '（你）' : ''}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : members.length >= 16 ? (
+        {panel === 'members' ? (
+          <section className="trip-stack" aria-labelledby="trip-members-title">
+            <h2 id="trip-members-title">成員（{members.length} 人）</h2>
+            <ul className="trip-members">
+              {members.map((m) => (
+                <li key={m.id} className="trip-member">
+                  <Avatar avatarId={m.avatar_id} isMe={m.id === me.id} decorative />
+                  <span>
+                    {m.name}
+                    {m.id === me.id ? '（你）' : ''}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="trip-actions">
+              <Button variant="secondary" onClick={() => void copyLink()}>
+                {copied ? '已複製連結' : '複製旅程連結'}
+              </Button>
+              <Button variant="secondary" onClick={() => setPanel('add')}>
+                新增朋友
+              </Button>
+            </div>
+            <p className="trip-hint">
+              朋友打開旅程連結就能自己加入；沒有手機的朋友可以由你代為新增。
+            </p>
+            <div className="trip-actions">
+              <Button
+                variant="quiet"
+                onClick={() => {
+                  try {
+                    clearIdentity(trip.id)
+                    setMemberId(null)
+                    setPanel(null)
+                  } catch {
+                    setError('無法清除身份，請確認瀏覽器的儲存空間設定。')
+                  }
+                }}
+              >
+                切換身份
+              </Button>
+              <Button variant="quiet" onClick={() => setPanel(null)}>
+                關閉
+              </Button>
+            </div>
+          </section>
+        ) : panel === 'add' ? (
+          <section className="trip-stack" aria-labelledby="trip-add-title">
+            <h2 id="trip-add-title">新增朋友</h2>
+            {members.length >= 16 ? (
               <Notice>這趟旅程已經有 16 人，無法再新增朋友。</Notice>
             ) : (
               <MemberForm
@@ -297,12 +310,11 @@ function TripContent({
                 }}
               />
             )}
-            <Button variant="quiet" onClick={() => setPanel(null)}>
-              關閉
+            <Button variant="quiet" onClick={() => setPanel('members')}>
+              取消
             </Button>
           </section>
-        )}
-        {isNew ? (
+        ) : isNew ? (
           isCamera ? (
             <ReceiptScan key={`scan:${me.id}`} trip={trip} members={members} me={me} />
           ) : (
@@ -333,7 +345,19 @@ function TripContent({
             </Notice>
           )
         ) : isList ? (
-          <ExpenseList expenses={expenses} members={members} path={path} />
+          <>
+            {members.length === 1 && (
+              <Ticket>
+                <div className="trip-invite">
+                  <p>把旅程連結傳給朋友，他們打開後選個頭像就能加入。</p>
+                  <Button variant="secondary" onClick={() => void copyLink()}>
+                    {copied ? '已複製連結' : '複製旅程連結'}
+                  </Button>
+                </div>
+              </Ticket>
+            )}
+            <ExpenseList expenses={expenses} members={members} path={path} />
+          </>
         ) : (
           <SettlePage trip={trip} members={members} expenses={expenses} me={me} />
         )}

@@ -23,8 +23,8 @@ export function ExpenseList({
   return (
     <div className="trip-stack">
       {groupExpenses(expenses).map((group) => (
-        <section key={group.date} className="trip-stack" aria-label={dateLabel(group.date)}>
-          <h2>{dateLabel(group.date)}</h2>
+        <section key={group.date} className="expense-day" aria-label={dateLabel(group.date)}>
+          <h2 className="expense-day__date">{dateLabel(group.date)}</h2>
           {group.expenses.map((expense) => {
             const payer = members.find((m) => m.id === expense.paid_by)
             const count = expense.expense_splits.length

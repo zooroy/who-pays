@@ -31,3 +31,16 @@
 .trip-empty {
   padding-block: var(--space-6);
 }
+.trip-hint {
+  margin: 0;
+  font-size: var(--font-size-small);
+  color: var(--color-ink-soft);
+}
+.trip-invite {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
+}
+.trip-invite p {
+  margin: 0;
+}

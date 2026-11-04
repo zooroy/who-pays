@@ -9,7 +9,25 @@
   margin: 0;
   padding: 0;
   display: grid;
-  gap: var(--space-3);
+}
+
+.settle-rows > li {
+  padding-block: var(--space-2);
+}
+
+.settle-rows > li + li {
+  border-top: 1px dashed var(--color-punch);
+}
+
+.settle-record {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.settle-record__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
 }
 
 .settle-pair {

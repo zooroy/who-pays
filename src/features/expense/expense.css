@@ -68,4 +68,68 @@
   min-height: var(--touch-min);
   display: flex;
   align-items: center;
+  list-style: none;
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+.expense-photo summary::-webkit-details-marker {
+  display: none;
+}
+.expense-photo[open] summary {
+  text-decoration: none;
+  color: var(--color-ink-soft);
+}
+/* A day of tickets: a small date stamp, then the tickets close together. */
+.expense-day {
+  display: grid;
+  gap: var(--space-2);
+}
+.expense-day__date {
+  margin: 0;
+  font-size: var(--font-size-body);
+  color: var(--color-ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.expense-head {
+  display: grid;
+  gap: var(--space-2);
+}
+.expense-head__title,
+.expense-head p {
+  margin: 0;
+}
+.expense-head__meta,
+.expense-stub {
+  color: var(--color-ink-soft);
+}
+.expense-stub {
+  margin: 0;
+  font-size: var(--font-size-small);
+}
+.expense-section {
+  display: grid;
+  gap: var(--space-2);
+}
+.expense-section h3 {
+  margin: 0;
+  font-size: var(--font-size-body);
+  color: var(--color-ink-soft);
+}
+.expense-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+.expense-rows > li {
+  padding-block: var(--space-2);
+}
+.expense-rows > li + li {
+  border-top: 1px dashed var(--color-punch);
+}
+.expense-amount-row {
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  gap: var(--space-2);
+  align-items: start;
 }

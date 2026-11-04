@@ -6,7 +6,7 @@ import { formatMoney, splitEvenly } from '../../lib/money'
 import { supabase } from '../../lib/supabase'
 import { tripKey, type Member } from '../trip/api'
 import { deleteExpense } from './api'
-import { SAVE_ERROR, type Expense } from './model'
+import { SAVE_ERROR, dateLabel, type Expense } from './model'
 import './expense.css'
 
 export function ExpenseDetail({
@@ -67,57 +67,72 @@ export function ExpenseDetail({
   }
   return (
     <div className="trip-stack">
-      <h2>{expense.title}</h2>
-      <p className="expense-total amount">{formatMoney(expense.amount, expense.currency)}</p>
-      <p>日期：{expense.spent_on}</p>
-      <section className="trip-stack">
-        <h3>付款人</h3>
-        {payer && (
-          <div className="trip-member">
-            <Avatar avatarId={payer.avatar_id} decorative />
-            <span>{payer.name}</span>
-          </div>
-        )}
-      </section>
-      <section className="trip-stack">
-        <h3>分攤者</h3>
-        {splitters.map((m) => (
-          <Ticket key={m.id}>
-            <TicketRow
-              title={m.name}
-              leading={<Avatar avatarId={m.avatar_id} decorative />}
-              amount={formatMoney(shares.get(m.id) ?? 0, expense.currency)}
-            />
-          </Ticket>
-        ))}
+      <Ticket
+        stub={
+          <p className="expense-stub">
+            最後由 {members.find((m) => m.id === expense.updated_by)?.name ?? '未知成員'} 修改
+          </p>
+        }
+      >
+        <div className="expense-head">
+          <h2 className="expense-head__title">{expense.title}</h2>
+          <p className="expense-total amount">{formatMoney(expense.amount, expense.currency)}</p>
+          <p className="expense-head__meta">{dateLabel(expense.spent_on)}</p>
+          {payer && (
+            <div className="trip-member">
+              <Avatar avatarId={payer.avatar_id} decorative />
+              <span>{payer.name} 付款</span>
+            </div>
+          )}
+        </div>
+      </Ticket>
+      <section className="expense-section" aria-labelledby="expense-split-title">
+        <h3 id="expense-split-title">分攤（{splitters.length} 人）</h3>
+        <Ticket>
+          <ul className="expense-rows">
+            {splitters.map((m) => (
+              <li key={m.id}>
+                <TicketRow
+                  title={m.name}
+                  leading={<Avatar avatarId={m.avatar_id} size="small" decorative />}
+                  amount={formatMoney(shares.get(m.id) ?? 0, expense.currency)}
+                />
+              </li>
+            ))}
+          </ul>
+        </Ticket>
       </section>
       {items.length > 0 && (
-        <section className="trip-stack">
-          <h3>品項明細</h3>
-          {items.map((item) => (
-            <Ticket key={item.position}>
-              <TicketRow
-                title={
-                  <>
-                    {item.name}
-                    {item.name_zh && item.name_zh !== item.name && (
-                      <span className="expense-translation">{item.name_zh}</span>
-                    )}
-                  </>
-                }
-                meta={`數量 ${item.qty}${item.unit_price !== null ? ` · 單價 ${formatMoney(item.unit_price, expense.currency)}` : ''}`}
-                amount={formatMoney(item.amount, expense.currency)}
-              />
-            </Ticket>
-          ))}
+        <section className="expense-section" aria-labelledby="expense-items-title">
+          <h3 id="expense-items-title">品項明細</h3>
+          <Ticket>
+            <ul className="expense-rows">
+              {items.map((item) => (
+                <li key={item.position}>
+                  <TicketRow
+                    title={
+                      <>
+                        {item.name}
+                        {item.name_zh && item.name_zh !== item.name && (
+                          <span className="expense-translation">{item.name_zh}</span>
+                        )}
+                      </>
+                    }
+                    meta={`數量 ${item.qty}${item.unit_price !== null ? `，單價 ${formatMoney(item.unit_price, expense.currency)}` : ''}`}
+                    amount={formatMoney(item.amount, expense.currency)}
+                  />
+                </li>
+              ))}
+            </ul>
+          </Ticket>
           {difference !== 0 && (
             <Notice>品項加總與總額差 {formatMoney(difference, expense.currency)}</Notice>
           )}
         </section>
       )}
       {expense.receipt_path && (
-        <section className="trip-stack">
-          <h3>收據照片</h3>
+        <details className="expense-photo">
+          <summary>查看收據照片</summary>
           {receipt.isPending && <p role="status">載入照片中…</p>}
           {receipt.isError && (
             <Notice
@@ -136,15 +151,14 @@ export function ExpenseDetail({
               />
             </a>
           )}
-        </section>
+        </details>
       )}
-      <p>最後由 {members.find((m) => m.id === expense.updated_by)?.name ?? '未知成員'} 修改</p>
       {error && <Notice tone="problem">{error}</Notice>}
       {confirm ? (
         <section className="trip-stack" aria-label="確認刪除支出">
           <p>確定要刪除這筆支出嗎？</p>
           <Button busy={busy} onClick={() => void remove()}>
-            刪除支出
+            確定刪除
           </Button>
           <Button variant="secondary" disabled={busy} onClick={() => setConfirm(false)}>
             取消
@@ -152,9 +166,9 @@ export function ExpenseDetail({
         </section>
       ) : (
         <div className="trip-actions">
-          <Button onClick={() => navigate(`${path}/expenses/${expense.id}/edit`)}>編輯</Button>
+          <Button onClick={() => navigate(`${path}/expenses/${expense.id}/edit`)}>編輯支出</Button>
           <Button variant="secondary" onClick={() => setConfirm(true)}>
-            刪除
+            刪除支出
           </Button>
         </div>
       )}

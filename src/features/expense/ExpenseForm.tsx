@@ -130,7 +130,7 @@ export function ExpenseForm({
       {mismatch && <Notice>品項加總與總額差 {mismatch}</Notice>}
       {receipt && (
         <details className="expense-photo" open={!scanned}>
-          <summary>收據照片</summary>
+          <summary>查看收據照片</summary>
           <img className="expense-receipt" src={receipt.photoUrl} alt="收據照片" />
         </details>
       )}
@@ -140,26 +140,28 @@ export function ExpenseForm({
         error={errors.title}
         onChange={(e) => setDraft({ ...draft, title: e.target.value })}
       />
-      <TextField
-        label="金額"
-        inputMode="decimal"
-        value={draft.amount}
-        error={errors.amount}
-        onChange={(e) => setDraft({ ...draft, amount: e.target.value })}
-      />
-      <SelectField
-        label="幣別"
-        value={draft.currency}
-        onChange={(e) => {
-          if (isCurrencyCode(e.target.value)) setDraft({ ...draft, currency: e.target.value })
-        }}
-      >
-        {Object.values(CURRENCIES).map((c) => (
-          <option value={c.code} key={c.code}>
-            {c.label}（{c.code}）
-          </option>
-        ))}
-      </SelectField>
+      <div className="expense-amount-row">
+        <TextField
+          label="金額"
+          inputMode="decimal"
+          value={draft.amount}
+          error={errors.amount}
+          onChange={(e) => setDraft({ ...draft, amount: e.target.value })}
+        />
+        <SelectField
+          label="幣別"
+          value={draft.currency}
+          onChange={(e) => {
+            if (isCurrencyCode(e.target.value)) setDraft({ ...draft, currency: e.target.value })
+          }}
+        >
+          {Object.values(CURRENCIES).map((c) => (
+            <option value={c.code} key={c.code}>
+              {c.label}（{c.code}）
+            </option>
+          ))}
+        </SelectField>
+      </div>
       <TextField
         label="日期"
         type="date"

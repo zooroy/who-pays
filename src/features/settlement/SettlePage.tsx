@@ -266,48 +266,48 @@ function SettleContent({
       {settlements.length > 0 && (
         <section className="trip-stack" aria-labelledby="settle-records-title">
           <h2 id="settle-records-title">還款紀錄</h2>
-          {settlements.map((s) => {
-            const amount = formatMoney(s.amount, s.currency)
-            const confirming = confirmId === s.id
-            return (
-              <Ticket
-                key={s.id}
-                stub={
-                  <div className="settle-stub">
-                    {confirming ? (
-                      <>
-                        <Button busy={deletingId === s.id} onClick={() => void remove(s.id)}>
-                          確定刪除
-                        </Button>
+          <Ticket>
+            <ul className="settle-rows">
+              {settlements.map((s) => {
+                const amount = formatMoney(s.amount, s.currency)
+                const confirming = confirmId === s.id
+                return (
+                  <li key={s.id} className="settle-record">
+                    <TicketRow
+                      leading={pair(s.from_member, s.to_member)}
+                      title={`${name(s.from_member)} 付給 ${name(s.to_member)}`}
+                      meta={`${shortDate(new Date(s.created_at))} 標記已付`}
+                      amount={amount}
+                    />
+                    <div className="settle-record__actions">
+                      {confirming ? (
+                        <>
+                          <Button
+                            variant="secondary"
+                            disabled={deletingId === s.id}
+                            onClick={() => setConfirmId(null)}
+                          >
+                            取消
+                          </Button>
+                          <Button busy={deletingId === s.id} onClick={() => void remove(s.id)}>
+                            確定刪除
+                          </Button>
+                        </>
+                      ) : (
                         <Button
-                          variant="secondary"
-                          disabled={deletingId === s.id}
-                          onClick={() => setConfirmId(null)}
+                          variant="quiet"
+                          onClick={() => setConfirmId(s.id)}
+                          aria-label={`刪除還款：${name(s.from_member)} 付給 ${name(s.to_member)} ${amount}`}
                         >
-                          取消
+                          刪除
                         </Button>
-                      </>
-                    ) : (
-                      <Button
-                        variant="quiet"
-                        onClick={() => setConfirmId(s.id)}
-                        aria-label={`刪除還款：${name(s.from_member)} 付給 ${name(s.to_member)} ${amount}`}
-                      >
-                        刪除這筆還款
-                      </Button>
-                    )}
-                  </div>
-                }
-              >
-                <TicketRow
-                  leading={pair(s.from_member, s.to_member)}
-                  title={`${name(s.from_member)} 付給 ${name(s.to_member)}`}
-                  meta={`${shortDate(new Date(s.created_at))} 標記已付`}
-                  amount={amount}
-                />
-              </Ticket>
-            )
-          })}
+                      )}
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          </Ticket>
         </section>
       )}
     </div>
