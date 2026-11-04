@@ -1,0 +1,74 @@
+.settle-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.settle-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.settle-pair {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.settle-pair__arrow {
+  color: var(--color-ink-soft);
+}
+
+.trip-stack.settle-currency {
+  gap: var(--space-2);
+}
+
+.settle-currency h3 {
+  margin: 0;
+  font-size: var(--font-size-body);
+  font-weight: 400;
+  color: var(--color-ink-soft);
+}
+
+.settle-stub {
+  display: flex;
+  flex: 1;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-2);
+  position: relative;
+}
+
+/* Keeps the stub's height while the stamp sits where the button was. */
+.settle-stub__hidden {
+  visibility: hidden;
+}
+
+.settle-stub__stamp {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  translate: 0 -50%;
+}
+
+/* The one bold moment: a big seal on an otherwise quiet screen. */
+.settle-done {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+}
+
+.settle-done h2 {
+  margin: 0;
+  font-size: var(--font-size-title);
+}
+
+.settle-done p {
+  margin: 0;
+  color: var(--color-ink-soft);
+}

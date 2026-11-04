@@ -24,6 +24,7 @@ import { getExpenses } from '../expense/api'
 import { ExpenseList } from '../expense/ExpenseList'
 import { ExpenseForm } from '../expense/ExpenseForm'
 import { ExpenseDetail } from '../expense/ExpenseDetail'
+import { SettlePage } from '../settlement/SettlePage'
 import type { Expense } from '../expense/model'
 
 export function TripPage() {
@@ -321,7 +322,7 @@ function TripContent({
         ) : isList ? (
           <ExpenseList expenses={expenses} members={members} path={path} />
         ) : (
-          <h2>結算</h2>
+          <SettlePage trip={trip} members={members} expenses={expenses} me={me} />
         )}
       </div>
     </AppShell>
