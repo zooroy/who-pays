@@ -54,9 +54,11 @@ try {
   const list = await a.storage.from('receipts').list(trip.trip_id)
   if (list.error) throw list.error
   assert(!list.data.some((file) => file.name === 'x.jpg'))
-  const afterOwner = await a.storage.from('receipts').download(path)
+  // Not download(): hosted Storage serves it from a CDN cache for up to the
+  // object's cache-control age. A signed URL is issued only for existing objects.
+  const afterOwner = await a.storage.from('receipts').createSignedUrl(path, 60)
   assert(afterOwner.error, 'A’s image must be gone')
-  console.log('PASS: A called remove; listing and download confirm the image is gone.')
+  console.log('PASS: A called remove; listing and signed URL confirm the image is gone.')
 } finally {
   await Promise.all(
     clients.map(async (client) => {

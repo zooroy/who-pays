@@ -29,7 +29,9 @@ export async function uploadReceipt(tripId: string, photo: Blob): Promise<string
   const path = `${tripId}/${crypto.randomUUID()}.jpg`
   const { error } = await supabase.storage
     .from('receipts')
-    .upload(path, photo, { contentType: 'image/jpeg' })
+    // Hosted Storage serves downloads through a CDN; keep the cache short so a
+    // deleted receipt disappears for trip members within a minute.
+    .upload(path, photo, { contentType: 'image/jpeg', cacheControl: '60' })
   if (error) throw error
   return path
 }

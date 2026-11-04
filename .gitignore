@@ -34,3 +34,8 @@ supabase/.temp
 
 # Real receipt photos for manual parse-receipt checks (personal data; never commit)
 test-receipts/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example

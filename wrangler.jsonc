@@ -1,0 +1,13 @@
+// Static hosting on Cloudflare (Pages now runs on Workers static assets).
+// No server code: `npm run deploy` builds with .env.production.local and uploads dist/.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "who-pays",
+  "compatibility_date": "2026-11-03",
+  "observability": { "enabled": true },
+  "assets": {
+    "directory": "./dist",
+    // /t/<token> share links are client-side routes: serve index.html for them.
+    "not_found_handling": "single-page-application"
+  }
+}
