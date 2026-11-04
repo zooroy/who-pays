@@ -86,11 +86,18 @@ export function expenseError(error: unknown): { message?: string; fields: Expens
   if (hasErrorCode(error, 'EXPENSE_NOT_FOUND')) return { fields: {}, message: '這筆支出已被刪除。' }
   return { fields: {}, message: SAVE_ERROR }
 }
+/** Items and photo from a scanned receipt, for a new expense. */
+export interface ReceiptPayload {
+  items: Omit<ExpenseItem, 'position'>[]
+  receipt_path: string
+  receipt_raw: unknown
+}
 export function expensePayload(
   tripId: string,
   memberId: string,
   draft: ExpenseDraft,
   existing?: Expense,
+  receipt?: ReceiptPayload,
 ) {
   const amount = parseMoneyInput(draft.amount, draft.currency)
   if (amount === null || !Number.isSafeInteger(amount) || amount <= 0)
@@ -105,19 +112,21 @@ export function expensePayload(
     spent_on: draft.spentOn,
     paid_by: draft.paidBy,
     split_member_ids: [...new Set(draft.splitMemberIds)],
-    items: existing
-      ? [...existing.expense_items]
-          .sort((a, b) => a.position - b.position)
-          .map(({ name, name_zh, qty, unit_price, amount }) => ({
-            name,
-            name_zh,
-            qty,
-            unit_price,
-            amount,
-          }))
-      : [],
-    receipt_path: existing?.receipt_path ?? null,
-    receipt_raw: existing?.receipt_raw ?? null,
+    items: receipt
+      ? receipt.items
+      : existing
+        ? [...existing.expense_items]
+            .sort((a, b) => a.position - b.position)
+            .map(({ name, name_zh, qty, unit_price, amount }) => ({
+              name,
+              name_zh,
+              qty,
+              unit_price,
+              amount,
+            }))
+        : [],
+    receipt_path: receipt?.receipt_path ?? existing?.receipt_path ?? null,
+    receipt_raw: receipt ? receipt.receipt_raw : (existing?.receipt_raw ?? null),
   }
 }
 export function groupExpenses(expenses: readonly Expense[]) {

@@ -48,8 +48,8 @@
 
 - [ ] 7.1 實作 Edge Function `parse-receipt`：驗證 JWT 與 trip_access、讀取 Storage 圖片、以 `responseSchema` 呼叫 `GEMINI_MODEL`、對應錯誤碼（QUOTA_EXCEEDED、NOT_A_RECEIPT、TIMEOUT、UPSTREAM_ERROR）；用 `supabase functions serve` 以 curl 驗證成功與無權限兩種情況
 - [ ] 7.2 撰寫 prompt：品項保留原文並附繁中翻譯、內含稅時 tax 填 0、判斷 is_receipt 與 confidence；用日本餐廳、日本超商、台灣統一發票三張真實收據驗證輸出符合 design 第 7 節的格式
-- [ ] 7.3 前端實作拍照或選圖、壓縮（最長邊 1600px、JPEG 0.8）、上傳到 `receipts/<trip_id>/<uuid>.jpg`、顯示辨識中狀態；驗證上傳檔案小於 1MB
-- [ ] 7.4 實作確認畫面：預填辨識結果、所有欄位可修改、低信心與加總不一致的提示、儲存時寫入 `receipt_raw`；驗證取消時不建立支出
+- [x] 7.3 前端實作拍照或選圖、壓縮（最長邊 1600px、JPEG 0.8）、上傳到 `receipts/<trip_id>/<uuid>.jpg`、顯示辨識中狀態；驗證上傳檔案小於 1MB
+- [x] 7.4 實作確認畫面：預填辨識結果、所有欄位可修改、低信心與加總不一致的提示、儲存時寫入 `receipt_raw`；驗證取消時不建立支出
 - [ ] 7.5 實作辨識失敗退回：依錯誤碼顯示對應文字，並開啟附有照片的手動新增畫面；以停用 API key 或改錯模型名稱模擬錯誤驗證
 - [ ] 7.6 檢查打包後的前端與網路請求中不含 Gemini API key（`grep` build 輸出）
 

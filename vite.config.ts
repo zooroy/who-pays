@@ -10,6 +10,6 @@ export default defineConfig({
     VitePWA({ registerType: 'autoUpdate' }),
   ],
   test: {
-    include: ['src/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'supabase/functions/**/*.test.ts'],
   },
 })

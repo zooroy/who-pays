@@ -25,6 +25,9 @@ import { ExpenseList } from '../expense/ExpenseList'
 import { ExpenseForm } from '../expense/ExpenseForm'
 import { ExpenseDetail } from '../expense/ExpenseDetail'
 import { SettlePage } from '../settlement/SettlePage'
+import { ReceiptScan } from '../receipt/ReceiptScan'
+import { PhotoInput } from '../receipt/PhotoInput'
+import { setPendingPhoto } from '../receipt/pending'
 import type { Expense } from '../expense/model'
 
 export function TripPage() {
@@ -120,6 +123,7 @@ function TripContent({
   const path = `/t/${trip.share_token}`
   const isNew = location.pathname === `${path}/expenses/new`
   const isEdit = location.pathname.endsWith('/edit')
+  const isCamera = isNew && new URLSearchParams(location.search).get('source') === 'camera'
   const selected = expenses.find((e) => e.id === expenseId)
   const isList = location.pathname === path
   const refresh = () => queryClient.invalidateQueries({ queryKey: tripKey(trip.id) })
@@ -189,13 +193,18 @@ function TripContent({
             >
               手動新增
             </Button>
-            <Button
-              big
-              icon={<CameraIcon />}
-              onClick={() => navigate(`${path}/expenses/new?source=camera`)}
+            <PhotoInput
+              onPick={(file) => {
+                setPendingPhoto(file)
+                navigate(`${path}/expenses/new?source=camera`)
+              }}
             >
-              拍收據
-            </Button>
+              {(open) => (
+                <Button big icon={<CameraIcon />} onClick={open}>
+                  拍收據
+                </Button>
+              )}
+            </PhotoInput>
           </>
         )
       }
@@ -294,7 +303,11 @@ function TripContent({
           </section>
         )}
         {isNew ? (
-          <ExpenseForm key={`new:${me.id}`} trip={trip} members={members} me={me} />
+          isCamera ? (
+            <ReceiptScan key={`scan:${me.id}`} trip={trip} members={members} me={me} />
+          ) : (
+            <ExpenseForm key={`new:${me.id}`} trip={trip} members={members} me={me} />
+          )
         ) : expenseId ? (
           selected ? (
             isEdit ? (
