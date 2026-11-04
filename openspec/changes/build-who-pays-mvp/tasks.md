@@ -24,7 +24,7 @@
 ## 4. 視覺基礎與頭像庫
 
 - [x] 4.1 安裝 frontend-design plugin，依 design 第 8 節建立 CSS tokens（五色、jf open 粉圓 woff2、字級階層、tabular numbers），並以一頁 token 預覽頁確認文字對比達 WCAG AA
-- [ ] 4.2 以 design 的色票作為 palette，用 ip-as-logo-skill 產生 16 隻吉祥物，轉成 256px webp 放入 `src/assets/avatars/`，建立 `avatar_id → 圖片` 對照表，並確認與 migration 的白名單一致
+- [x] 4.2 以 design 的色票作為 palette，用 ip-as-logo-skill 產生 16 隻吉祥物，轉成 256px webp 放入 `src/assets/avatars/`，建立 `avatar_id → 圖片` 對照表，並確認與 migration 的白名單一致
 - [x] 4.3 實作共用元件：頭像（含目前使用者外框、已佔用灰化狀態）、票卡（直角、剪票缺口、鋸齒撕線）、底部分頁與拇指區按鈕；在預覽頁截圖檢查 375px 寬度下的呈現
 
 ## 5. 旅程與成員（trip-membership）
