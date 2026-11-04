@@ -62,7 +62,7 @@
 
 ## 9. PWA、部署與整體驗證
 
-- [ ] 9.1 設定 PWA manifest（名稱、圖示、車票綠主題色）與 service worker 快取靜態資源和字體；以 Lighthouse 驗證可安裝
+- [x] 9.1 設定 PWA manifest（名稱、圖示、車票綠主題色）與 service worker 快取靜態資源和字體；以 Lighthouse 驗證可安裝
 - [ ] 9.2 部署 Supabase（migrations、開啟 anonymous sign-in、設定 secrets、部署 Edge Function）並將前端部署到靜態主機；在 README 記錄部署步驟與「免費專案閒置 7 天會暫停」的說明
 - [ ] 9.3 以三支手機實際跑一次完整流程：建立旅程 → LINE 分享 → 加入選頭像 → 手動記帳與拍收據（JPY、TWD 混用）→ 即時同步 → 結算 → 標記已付 → 全部結清，並記錄發現的問題
 - [ ] 9.4 用 frontend-design skill 的自我檢討流程，在手機上截圖檢查各主要畫面，修正偏離 design 第 8 節的地方

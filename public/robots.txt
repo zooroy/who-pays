@@ -1,0 +1,3 @@
+User-agent: *
+# Trip pages are private share links; keep them out of search results.
+Disallow: /t/
