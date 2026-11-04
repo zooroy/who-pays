@@ -101,6 +101,11 @@ export function upstreamError(status: number): ReceiptErrorCode {
   return status === 429 || status === 402 ? 'QUOTA_EXCEEDED' : 'UPSTREAM_ERROR'
 }
 
+/** Gemini overload or internal errors are usually momentary; worth one retry. */
+export function isRetryable(status: number): boolean {
+  return status === 503 || status === 500
+}
+
 const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 
 /** Only `<trip_id>/<uuid>.jpg` inside the caller's own trip folder is accepted. */

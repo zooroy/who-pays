@@ -7,12 +7,14 @@ import {
   RECEIPT_PROMPT,
   RECEIPT_SCHEMA,
   extractResult,
+  isRetryable,
   parseRequest,
   upstreamError,
   type ReceiptErrorCode,
 } from './receipt.ts'
 
 const TIMEOUT_MS = 25_000
+const RETRY_DELAY_MS = 1_500
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -69,50 +71,63 @@ Deno.serve(async (req) => {
   if (photoError || !photo) return fail('FORBIDDEN')
 
   const key = Deno.env.get('GEMINI_API_KEY')
-  const model = Deno.env.get('GEMINI_MODEL') || 'gemini-3.8-flash'
+  const model = Deno.env.get('GEMINI_MODEL') || 'gemini-3.6-flash'
   if (!key) {
     console.error('parse-receipt: GEMINI_API_KEY is not set')
     return fail('UPSTREAM_ERROR')
   }
 
-  let response: Response
-  try {
-    response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+  const body = JSON.stringify({
+    contents: [
       {
-        method: 'POST',
-        signal: AbortSignal.timeout(TIMEOUT_MS),
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { text: RECEIPT_PROMPT },
-                {
-                  inline_data: {
-                    mime_type: 'image/jpeg',
-                    data: toBase64(new Uint8Array(await photo.arrayBuffer())),
-                  },
-                },
-              ],
+        parts: [
+          { text: RECEIPT_PROMPT },
+          {
+            inline_data: {
+              mime_type: 'image/jpeg',
+              data: toBase64(new Uint8Array(await photo.arrayBuffer())),
             },
-          ],
-          generationConfig: {
-            responseMimeType: 'application/json',
-            responseJsonSchema: RECEIPT_SCHEMA,
-            temperature: 0,
           },
-        }),
+        ],
       },
-    )
+    ],
+    generationConfig: {
+      responseMimeType: 'application/json',
+      responseJsonSchema: RECEIPT_SCHEMA,
+      temperature: 0,
+      // Reading a receipt is extraction, not reasoning; low thinking keeps it fast.
+      thinkingConfig: { thinkingLevel: 'low' },
+    },
+  })
+  // One shared 25s budget; a busy model (500/503) gets one retry inside it.
+  const signal = AbortSignal.timeout(TIMEOUT_MS)
+  let response: Response | null = null
+  try {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      if (attempt > 0) await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS))
+      response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+        {
+          method: 'POST',
+          signal,
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+          body,
+        },
+      )
+      if (!isRetryable(response.status)) break
+      // Log the status and Google's message only; never the request (it carries the key header).
+      console.error('parse-receipt: Gemini', response.status, (await response.text()).slice(0, 300))
+    }
   } catch (error) {
-    if (error instanceof DOMException && error.name === 'TimeoutError') return fail('TIMEOUT')
+    if (error instanceof DOMException && ['TimeoutError', 'AbortError'].includes(error.name))
+      return fail('TIMEOUT')
     console.error('parse-receipt: Gemini request failed', error)
     return fail('UPSTREAM_ERROR')
   }
+  if (!response) return fail('UPSTREAM_ERROR')
   if (!response.ok) {
-    // Log the status and Google's message only; never the request (it carries the key header).
-    console.error('parse-receipt: Gemini', response.status, (await response.text()).slice(0, 500))
+    if (!isRetryable(response.status))
+      console.error('parse-receipt: Gemini', response.status, (await response.text()).slice(0, 500))
     return fail(upstreamError(response.status))
   }
   const result = extractResult(await response.json().catch(() => null))

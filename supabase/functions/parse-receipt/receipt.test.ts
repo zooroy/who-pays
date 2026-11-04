@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { extractResult, parseRequest, upstreamError } from './receipt.ts'
+import { extractResult, isRetryable, parseRequest, upstreamError } from './receipt.ts'
 
 const trip = '6f1c2b8e-1d2a-4b3c-8d4e-5f6a7b8c9d0e'
 const photo = 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d'
@@ -43,5 +43,14 @@ describe('extractResult', () => {
     expect(extractResult(wrap('not json'))).toBeNull()
     expect(extractResult(wrap('[1]'))).toBeNull()
     expect(extractResult(wrap('{"total":1}'))).toBeNull()
+  })
+})
+
+describe('isRetryable', () => {
+  it('retries only a busy or failing model', () => {
+    expect(isRetryable(503)).toBe(true)
+    expect(isRetryable(500)).toBe(true)
+    expect(isRetryable(429)).toBe(false)
+    expect(isRetryable(400)).toBe(false)
   })
 })
