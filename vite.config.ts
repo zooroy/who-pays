@@ -36,6 +36,22 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rolldownOptions: {
+      output: {
+        // Libraries change far less often than app code, so each gets its own
+        // chunk: a deploy only re-downloads the app chunk, and no chunk is over 500 kB.
+        codeSplitting: {
+          groups: [
+            { name: 'react', test: /node_modules[\\/](react|react-dom|scheduler)[\\/]/ },
+            { name: 'router', test: /node_modules[\\/]react-router[\\/]/ },
+            { name: 'supabase', test: /node_modules[\\/]@supabase[\\/]/ },
+            { name: 'vendor', test: /node_modules[\\/]/ },
+          ],
+        },
+      },
+    },
+  },
   test: {
     include: ['src/**/*.test.ts', 'supabase/functions/**/*.test.ts'],
   },
