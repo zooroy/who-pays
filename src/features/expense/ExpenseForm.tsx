@@ -157,7 +157,7 @@ export function ExpenseForm({
         >
           {Object.values(CURRENCIES).map((c) => (
             <option value={c.code} key={c.code}>
-              {c.label}（{c.code}）
+              {c.label} {c.code}
             </option>
           ))}
         </SelectField>
