@@ -18,7 +18,8 @@
   gap: var(--space-2);
   padding: var(--space-2);
   min-height: var(--touch-min);
-  border: 1px solid var(--color-punch);
+  border: 2px solid var(--color-punch);
+  border-radius: var(--radius-control);
   cursor: pointer;
   overflow-wrap: anywhere;
 }
