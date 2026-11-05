@@ -65,3 +65,12 @@ export function PlusIcon() {
     </svg>
   )
 }
+
+/** Back to the previous level (我的旅程). */
+export function BackIcon() {
+  return (
+    <svg {...base}>
+      <path d="M15 5l-7 7 7 7" />
+    </svg>
+  )
+}

@@ -11,14 +11,17 @@ import {
   Ticket,
   Notice,
 } from '../../components'
+import { hasErrorCode, membershipError, readIdentity, saveIdentity } from '../../lib/identity'
 import {
-  clearIdentity,
-  hasErrorCode,
-  membershipError,
-  readIdentity,
-  saveIdentity,
-} from '../../lib/identity'
-import { addMember, getMembers, getTrip, joinTrip, tripKey, type Member, type Trip } from './api'
+  addMember,
+  getMembers,
+  getTrip,
+  joinTrip,
+  tripKey,
+  updateMember,
+  type Member,
+  type Trip,
+} from './api'
 import { MemberForm } from './MemberForm'
 import { useTripRealtime } from './useTripRealtime'
 import { getExpenses } from '../expense/api'
@@ -31,6 +34,8 @@ import { PhotoInput } from '../receipt/PhotoInput'
 import { setPendingPhoto } from '../receipt/pending'
 import type { Expense } from '../expense/model'
 
+const HOME = { to: '/', label: '回到我的旅程' }
+
 export function TripPage() {
   const { shareToken = '' } = useParams()
   const navigate = useNavigate()
@@ -42,19 +47,19 @@ export function TripPage() {
   })
   if (joined.isPending)
     return (
-      <AppShell title="旅程">
+      <AppShell title="旅程" back={HOME}>
         <p role="status">載入中…</p>
       </AppShell>
     )
   if (!joined.data)
     return (
-      <AppShell title="旅程">
+      <AppShell title="旅程" back={HOME}>
         <div className="trip-stack">
           <Notice tone="problem">{membershipError(joined.error)}</Notice>
           {!hasErrorCode(joined.error, 'TRIP_NOT_FOUND') && (
             <Button onClick={() => void joined.refetch()}>重新載入</Button>
           )}
-          <Button onClick={() => navigate('/')}>建立新旅程</Button>
+          <Button onClick={() => navigate('/')}>回到我的旅程</Button>
         </div>
       </AppShell>
     )
@@ -76,13 +81,13 @@ function TripData({ tripId }: { tripId: string }) {
   })
   if (trip.isPending || members.isPending || expenses.isPending)
     return (
-      <AppShell title="旅程">
+      <AppShell title="旅程" back={HOME}>
         <p role="status">載入中…</p>
       </AppShell>
     )
   if (!trip.data || !members.data || !expenses.data)
     return (
-      <AppShell title="旅程">
+      <AppShell title="旅程" back={HOME}>
         <Notice
           tone="problem"
           action={
@@ -117,7 +122,7 @@ function TripContent({
   const queryClient = useQueryClient()
   const location = useLocation()
   const [memberId, setMemberId] = useState(() => readIdentity(trip.id))
-  const [panel, setPanel] = useState<'members' | 'add' | null>(null)
+  const [panel, setPanel] = useState<'members' | 'add' | 'switch' | { edit: string } | null>(null)
   // Leaving a page closes the member panel, so it never hides the screen you navigate to.
   const [panelPath, setPanelPath] = useState(location.pathname)
   if (panelPath !== location.pathname) {
@@ -160,7 +165,7 @@ function TripContent({
   }
   if (!me)
     return (
-      <AppShell title={trip.name}>
+      <AppShell title={trip.name} back={HOME}>
         <div className="trip-stack">
           <h2>加入旅程</h2>
           {members.length >= 16 ? (
@@ -198,6 +203,7 @@ function TripContent({
   return (
     <AppShell
       title={trip.name}
+      back={HOME}
       tripPath={path}
       thumbBar={
         isList && (
@@ -255,10 +261,13 @@ function TripContent({
               {members.map((m) => (
                 <li key={m.id} className="trip-member">
                   <Avatar avatarId={m.avatar_id} isMe={m.id === me.id} decorative />
-                  <span>
+                  <span className="trip-member__name">
                     {m.name}
                     {m.id === me.id ? '（你）' : ''}
                   </span>
+                  <Button variant="quiet" onClick={() => setPanel({ edit: m.id })}>
+                    編輯<span className="visually-hidden">{m.name}</span>
+                  </Button>
                 </li>
               ))}
             </ul>
@@ -271,21 +280,10 @@ function TripContent({
               </Button>
             </div>
             <p className="trip-hint">
-              朋友打開旅程連結就能自己加入；沒有手機的朋友可以由你代為新增。
+              朋友打開旅程連結就能自己加入；沒有手機的朋友可以由你代為新增。加入主畫面後，第一次打開請在「我的旅程」貼上這個連結。
             </p>
             <div className="trip-actions">
-              <Button
-                variant="quiet"
-                onClick={() => {
-                  try {
-                    clearIdentity(trip.id)
-                    setMemberId(null)
-                    setPanel(null)
-                  } catch {
-                    setError('無法清除身份，請確認瀏覽器的儲存空間設定。')
-                  }
-                }}
-              >
+              <Button variant="quiet" onClick={() => setPanel('switch')}>
                 切換身份
               </Button>
               <Button variant="quiet" onClick={() => setPanel(null)}>
@@ -293,6 +291,38 @@ function TripContent({
               </Button>
             </div>
           </section>
+        ) : panel === 'switch' ? (
+          <section className="trip-stack" aria-labelledby="trip-switch-title">
+            <h2 id="trip-switch-title">切換身份</h2>
+            <p className="trip-hint">選擇你在這趟旅程中是誰。</p>
+            {error && <Notice tone="problem">{error}</Notice>}
+            <ul className="trip-members">
+              {members.map((m) => (
+                <li key={m.id}>
+                  <Button
+                    variant="secondary"
+                    disabled={m.id === me.id}
+                    onClick={() => claim(m.id)}
+                    icon={<Avatar avatarId={m.avatar_id} decorative />}
+                  >
+                    {m.name}
+                    {m.id === me.id ? '（目前）' : ''}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+            <Button variant="quiet" onClick={() => setPanel('members')}>
+              取消
+            </Button>
+          </section>
+        ) : typeof panel === 'object' && panel !== null ? (
+          <EditMember
+            key={panel.edit}
+            member={members.find((m) => m.id === panel.edit)}
+            members={members}
+            onRefresh={refresh}
+            onDone={() => setPanel('members')}
+          />
         ) : panel === 'add' ? (
           <section className="trip-stack" aria-labelledby="trip-add-title">
             <h2 id="trip-add-title">新增朋友</h2>
@@ -363,5 +393,41 @@ function TripContent({
         )}
       </div>
     </AppShell>
+  )
+}
+
+function EditMember({
+  member,
+  members,
+  onRefresh,
+  onDone,
+}: {
+  member: Member | undefined
+  members: Member[]
+  onRefresh: () => Promise<unknown>
+  onDone: () => void
+}) {
+  return (
+    <section className="trip-stack" aria-labelledby="trip-edit-title">
+      <h2 id="trip-edit-title">編輯成員</h2>
+      {member ? (
+        <MemberForm
+          members={members}
+          initial={member}
+          label="儲存成員"
+          onRefresh={onRefresh}
+          onSave={async (name, avatar) => {
+            await updateMember(member.id, name, avatar)
+            await onRefresh()
+            onDone()
+          }}
+        />
+      ) : (
+        <Notice>找不到這位成員，可能已被其他人修改。</Notice>
+      )}
+      <Button variant="quiet" onClick={onDone}>
+        取消
+      </Button>
+    </section>
   )
 }

@@ -96,3 +96,49 @@ export async function addMember(tripId: string, name: string, avatar: AvatarId):
   if (typeof data !== 'string') throw new Error('Invalid member id')
   return data
 }
+export async function updateMember(
+  memberId: string,
+  name: string,
+  avatar: AvatarId,
+): Promise<void> {
+  const { error } = await supabase.rpc('update_member', {
+    member_id: memberId,
+    name,
+    avatar_id: avatar,
+  })
+  if (error) throw error
+}
+export interface MyTrip extends Trip {
+  members: { id: string; avatar_id: AvatarId }[]
+}
+/** Every trip this device's anonymous user can open; RLS limits the rows (design §1). */
+export async function getMyTrips(): Promise<MyTrip[]> {
+  const { data, error } = await supabase
+    .from('trips')
+    .select('id,name,share_token,default_currency,members(id,avatar_id)')
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data.map((row: unknown) => {
+    if (
+      !record(row) ||
+      typeof row.id !== 'string' ||
+      typeof row.name !== 'string' ||
+      typeof row.share_token !== 'string' ||
+      !isCurrencyCode(row.default_currency) ||
+      !Array.isArray(row.members)
+    )
+      throw new Error('Invalid trip')
+    const members = row.members.map((m: unknown) => {
+      if (!record(m) || typeof m.id !== 'string' || !isAvatarId(m.avatar_id))
+        throw new Error('Invalid member')
+      return { id: m.id, avatar_id: m.avatar_id }
+    })
+    return {
+      id: row.id,
+      name: row.name,
+      share_token: row.share_token,
+      default_currency: row.default_currency,
+      members,
+    }
+  })
+}

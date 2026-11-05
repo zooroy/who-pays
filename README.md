@@ -93,6 +93,7 @@ node --env-file=.env.local scripts/receipt-function-check.ts  # parse-receipt �
 - `create_trip(name, default_currency, member_name, avatar_id)` 回傳 `{ trip_id, share_token, member_id }`。
 - `join_trip(share_token)` 回傳旅程 UUID；重複加入不會重複建立權限。
 - `add_member(trip_id, name, avatar_id)` 回傳成員 UUID，需旅程存取權。
+- `update_member(member_id, name, avatar_id)` 回傳 void，需該成員所屬旅程的存取權；旅程中任何成員都能修改任何成員的名字與頭像。成員不存在時同樣回 `TRIP_ACCESS_DENIED`，頭像已被其他成員使用時回 `AVATAR_TAKEN`。
 - `upsert_expense(payload)` 回傳支出 UUID，需旅程存取權。新增省略 `id`，修改傳入既有 `id`；修改為整筆替換，不是部分更新。`member_id` 是目前認領的成員，新增時寫入 `created_by` 與 `updated_by`，修改時保留原建立者。
 - `delete_expense(expense_id)` 回傳 void，需旅程存取權；連帶刪除分攤及品項，不處理 Storage 照片。
 

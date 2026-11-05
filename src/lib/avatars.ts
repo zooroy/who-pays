@@ -78,3 +78,8 @@ export const AVATARS: Record<AvatarId, AvatarInfo> = Object.fromEntries(
 export function isAvatarId(value: unknown): value is AvatarId {
   return typeof value === 'string' && (AVATAR_IDS as readonly string[]).includes(value)
 }
+
+/** A member name is optional: left blank, the member is called by their avatar (熊, 貓…). */
+export function memberName(name: string, avatar: AvatarId): string {
+  return name.trim() || AVATARS[avatar].name
+}

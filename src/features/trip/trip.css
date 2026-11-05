@@ -44,3 +44,21 @@
 .trip-invite p {
   margin: 0;
 }
+.my-trips {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+.my-trips__open {
+  padding-top: var(--space-5);
+  border-top: 2px dashed var(--color-punch);
+}
+.my-trips__form {
+  gap: var(--space-3);
+}
+.trip-member__name {
+  flex: 1;
+  min-width: 0;
+}

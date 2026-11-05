@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router'
 import { AppShell, Button, Notice } from './components'
 import { ensureSession } from './lib/supabase'
 import { CreateTrip } from './features/trip/CreateTrip'
+import { MyTrips } from './features/trip/MyTrips'
 import { TripPage } from './features/trip/TripPage'
 import './features/trip/trip.css'
 
@@ -36,7 +37,8 @@ function AuthenticatedApp() {
     )
   return (
     <Routes>
-      <Route path="/" element={<CreateTrip />} />
+      <Route path="/" element={<MyTrips />} />
+      <Route path="/new" element={<CreateTrip />} />
       <Route path="/t/:shareToken" element={<TripPage />} />
       <Route path="/t/:shareToken/expenses/new" element={<TripPage />} />
       <Route path="/t/:shareToken/expenses/:expenseId" element={<TripPage />} />
@@ -46,7 +48,7 @@ function AuthenticatedApp() {
         path="*"
         element={
           <AppShell title="找不到頁面">
-            <a href="/">建立新旅程</a>
+            <a href="/">回到我的旅程</a>
           </AppShell>
         }
       />

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
-import { NavLink } from 'react-router'
-import { StampIcon, TicketIcon } from './icons'
+import { Link, NavLink } from 'react-router'
+import { BackIcon, StampIcon, TicketIcon } from './icons'
 import './AppShell.css'
 
 interface AppShellProps {
@@ -11,6 +11,8 @@ interface AppShellProps {
   thumbBar?: ReactNode
   /** Base path of the trip, e.g. /t/abc. Shows the 支出 / 結算 tabs when set. */
   tripPath?: string
+  /** Shows a back link before the title (to 我的旅程). */
+  back?: { to: string; label: string }
   children: ReactNode
 }
 
@@ -18,13 +20,32 @@ interface AppShellProps {
  * One-handed layout: content scrolls, everything you tap often sits in the
  * lower half of the screen (design.md §8).
  */
-export function AppShell({ title, headerExtra, thumbBar, tripPath, children }: AppShellProps) {
+export function AppShell({
+  title,
+  headerExtra,
+  thumbBar,
+  tripPath,
+  back,
+  children,
+}: AppShellProps) {
   return (
     <div
       className={`app-shell${thumbBar ? ' app-shell--thumb' : ''}${tripPath ? ' app-shell--tabs' : ''}`}
     >
       <header className="app-shell__header">
-        <h1 className="app-shell__title">{title}</h1>
+        <div className="app-shell__heading">
+          {back && (
+            <Link
+              className="app-shell__back"
+              to={back.to}
+              aria-label={back.label}
+              title={back.label}
+            >
+              <BackIcon />
+            </Link>
+          )}
+          <h1 className="app-shell__title">{title}</h1>
+        </div>
         {headerExtra && <div className="app-shell__extra">{headerExtra}</div>}
       </header>
       <main className="app-shell__content">{children}</main>

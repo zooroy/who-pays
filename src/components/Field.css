@@ -84,3 +84,8 @@ select.field__control {
   color: var(--color-ticket-paper);
   font-size: 0.8em;
 }
+
+.field__control::placeholder {
+  color: var(--color-ink-soft);
+  opacity: 1;
+}
