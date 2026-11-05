@@ -29,7 +29,7 @@
 ## 6. 整合驗證與部署
 
 - [x] 6.1 `npm run lint`、`npm test`、`npm run build`、`supabase test db` 全部通過；`supabase db push` 套用 migration 到正式環境並 `npm run deploy`（由使用者執行），以 curl 確認正式網站載入新版
-- [ ] 6.2 使用者以 iPhone 確認：Safari 中可回首頁並建立第二個旅程；主畫面 App 重新加入後顯示新 icon，第一次打開可貼上連結接回旅程與身份；編輯成員與取消切換身份正常
+- [x] 6.2 使用者以 iPhone 確認：Safari 中可回首頁並建立第二個旅程；主畫面 App 重新加入後顯示新 icon，第一次打開可貼上連結接回旅程與身份；編輯成員與取消切換身份正常
 
 ## Workflow follow-up
 
