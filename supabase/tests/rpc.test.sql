@@ -6,7 +6,8 @@ insert into auth.users(id) values
  ('11111111-1111-4111-8111-111111111111'),
  ('22222222-2222-4222-8222-222222222222');
 -- Temporary state is accessible to the caller; assertions on protected tables run
--- as postgres because this task intentionally introduces no RLS policies.
+-- as postgres, so they only count rows of the trips this test creates (a local
+-- database may already hold other data).
 create temporary table test_state(key text primary key, value jsonb);
 grant all on test_state to authenticated;
 set local role authenticated;
@@ -31,28 +32,28 @@ select throws_ok($$select public.upsert_expense((select value || jsonb_build_obj
 select throws_ok($$select public.upsert_expense((select value || jsonb_build_object('split_member_ids',jsonb_build_array((select value->>'member_id' from test_state where key='other'))) from test_state where key='payload'))$$, '23503',null,'cross-trip splitter rolls back inserted expense');
 select throws_ok($$select public.upsert_expense((select value || jsonb_build_object('member_id',(select value->>'member_id' from test_state where key='other')) from test_state where key='payload'))$$, '22023','INVALID_MEMBER','cross-trip author rejected');
 reset role;
-select is((select count(*) from public.expenses),1::bigint,'failed creates leave no expenses');
-select is((select count(*) from public.expense_splits),1::bigint,'failed creates leave no splits');
-select is((select count(*) from public.expense_items),1::bigint,'failed creates leave no items');
+select is((select count(*) from public.expenses where trip_id in (select (value->>'trip_id')::uuid from test_state where key in ('trip','other'))),1::bigint,'failed creates leave no expenses');
+select is((select count(*) from public.expense_splits where trip_id in (select (value->>'trip_id')::uuid from test_state where key in ('trip','other'))),1::bigint,'failed creates leave no splits');
+select is((select count(*) from public.expense_items where trip_id in (select (value->>'trip_id')::uuid from test_state where key in ('trip','other'))),1::bigint,'failed creates leave no items');
 select ok((select value->>'share_token' ~ '^[A-Za-z0-9]{22}$' from test_state where key='trip'), 'base62 token length');
-select is((select count(*) from public.trip_access),2::bigint,'creator access created');
+select is((select count(*) from public.trip_access where trip_id in (select (value->>'trip_id')::uuid from test_state where key in ('trip','other'))),2::bigint,'creator access created');
 select is((select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and c.relrowsecurity),7::bigint,'all seven tables have RLS');
 update test_state set value = value || jsonb_build_object('id',(select value #>> '{}' from test_state where key='expense')) where key='payload';
 set local role authenticated;
 select throws_ok($$select public.upsert_expense((select value || '{"split_member_ids":[]}'::jsonb from test_state where key='payload'))$$,'22023','SPLITTERS_REQUIRED','empty split update rejected');
 select throws_ok($$select public.upsert_expense((select value || '{"title":"不應保留","items":[{"name":"壞品項","qty":0,"amount":0}]}'::jsonb from test_state where key='payload'))$$,'23514',null,'late item failure rolls back update and child replacement');
 reset role;
-select is((select title from public.expenses),'計程車','failed update preserves parent');
-select is((select count(*) from public.expense_splits),1::bigint,'failed update preserves split');
-select is((select amount from public.expense_items),3000::bigint,'failed update preserves item');
+select is((select title from public.expenses where trip_id in (select (value->>'trip_id')::uuid from test_state where key in ('trip','other'))),'計程車','failed update preserves parent');
+select is((select count(*) from public.expense_splits where trip_id in (select (value->>'trip_id')::uuid from test_state where key in ('trip','other'))),1::bigint,'failed update preserves split');
+select is((select amount from public.expense_items where trip_id in (select (value->>'trip_id')::uuid from test_state where key in ('trip','other'))),3000::bigint,'failed update preserves item');
 set local role authenticated;
 select lives_ok($$select public.upsert_expense((select value || jsonb_build_object('amount',4000,'member_id',(select value #>> '{}' from test_state where key='member'),'split_member_ids',jsonb_build_array((select value #>> '{}' from test_state where key='member')),'items','[]'::jsonb) from test_state where key='payload'))$$,'update replaces children and author');
 reset role;
-select is((select amount from public.expenses),4000::bigint,'amount updated');
-select is((select updated_by::text from public.expenses),(select value #>> '{}' from test_state where key='member'),'last modifier updated');
-select is((select created_by::text from public.expenses),(select value->>'member_id' from test_state where key='trip'),'creator preserved');
-select is((select member_id::text from public.expense_splits),(select value #>> '{}' from test_state where key='member'),'splits replaced');
-select is((select count(*) from public.expense_items),0::bigint,'items replaced');
+select is((select amount from public.expenses where trip_id in (select (value->>'trip_id')::uuid from test_state where key in ('trip','other'))),4000::bigint,'amount updated');
+select is((select updated_by::text from public.expenses where trip_id in (select (value->>'trip_id')::uuid from test_state where key in ('trip','other'))),(select value #>> '{}' from test_state where key='member'),'last modifier updated');
+select is((select created_by::text from public.expenses where trip_id in (select (value->>'trip_id')::uuid from test_state where key in ('trip','other'))),(select value->>'member_id' from test_state where key='trip'),'creator preserved');
+select is((select member_id::text from public.expense_splits where trip_id in (select (value->>'trip_id')::uuid from test_state where key in ('trip','other'))),(select value #>> '{}' from test_state where key='member'),'splits replaced');
+select is((select count(*) from public.expense_items where trip_id in (select (value->>'trip_id')::uuid from test_state where key in ('trip','other'))),0::bigint,'items replaced');
 set local role authenticated;
 set local request.jwt.claims = '{"sub":"22222222-2222-4222-8222-222222222222","role":"authenticated"}';
 select throws_ok($$select public.add_member((select (value->>'trip_id')::uuid from test_state where key='trip'),'狐狸','fox')$$,'42501','TRIP_ACCESS_DENIED','nonmember cannot add member');
@@ -68,9 +69,9 @@ set local role authenticated;
 select lives_ok($$select public.upsert_expense((select value from test_state where key='payload'))$$,'joined caller can update');
 select lives_ok($$select public.delete_expense((select (value #>> '{}')::uuid from test_state where key='expense'))$$,'joined caller can delete');
 reset role;
-select is((select count(*) from public.expenses),0::bigint,'expense removed');
-select is((select count(*) from public.expense_splits),0::bigint,'splits cascade');
-select is((select count(*) from public.expense_items),0::bigint,'items cascade');
+select is((select count(*) from public.expenses where trip_id in (select (value->>'trip_id')::uuid from test_state where key in ('trip','other'))),0::bigint,'expense removed');
+select is((select count(*) from public.expense_splits where trip_id in (select (value->>'trip_id')::uuid from test_state where key in ('trip','other'))),0::bigint,'splits cascade');
+select is((select count(*) from public.expense_items where trip_id in (select (value->>'trip_id')::uuid from test_state where key in ('trip','other'))),0::bigint,'items cascade');
 set local role authenticated;
 set local request.jwt.claims = '{"role":"authenticated"}';
 select throws_ok($$select public.create_trip('東京','JPY','熊','bear')$$,'42501','AUTH_REQUIRED','create requires uid');
