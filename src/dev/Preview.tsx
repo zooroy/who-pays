@@ -47,11 +47,11 @@ export default function Preview() {
         }
         thumbBar={
           <>
-            <Button variant="secondary" icon={<PencilIcon />}>
-              手動新增
-            </Button>
             <Button big icon={<CameraIcon />}>
               拍收據
+            </Button>
+            <Button variant="secondary" icon={<PencilIcon />}>
+              手動新增
             </Button>
           </>
         }

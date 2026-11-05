@@ -27,7 +27,13 @@
 }
 
 .field__control::-webkit-date-and-time-value {
+  margin: 0;
   text-align: left;
+}
+
+/* With appearance: none, iOS pins the date value to the top; center it. */
+.field__control[type='date'] {
+  line-height: calc(var(--touch-min) - 4px);
 }
 
 select.field__control {

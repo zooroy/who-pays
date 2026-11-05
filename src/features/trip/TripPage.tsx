@@ -202,13 +202,6 @@ function TripContent({
       thumbBar={
         isList && (
           <>
-            <Button
-              variant="secondary"
-              icon={<PencilIcon />}
-              onClick={() => navigate(`${path}/expenses/new`)}
-            >
-              手動新增
-            </Button>
             <PhotoInput
               onPick={(file) => {
                 setPendingPhoto(file)
@@ -221,6 +214,13 @@ function TripContent({
                 </Button>
               )}
             </PhotoInput>
+            <Button
+              variant="secondary"
+              icon={<PencilIcon />}
+              onClick={() => navigate(`${path}/expenses/new`)}
+            >
+              手動新增
+            </Button>
           </>
         )
       }

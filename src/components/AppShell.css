@@ -48,7 +48,7 @@
 
 .thumb-bar {
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: 1fr auto;
   gap: var(--space-3);
   align-items: center;
   height: var(--thumb-bar-height);
