@@ -23,8 +23,8 @@
 
 ## 5. 新 icon
 
-- [ ] 5.1 由 Codex 依 ip-as-logo 流程（design 第 7 節）提出三個方向並經使用者確認後產生六張候選，使用者選定一張；交付至少 1024×1024 的原圖供審查（不放進 `public/`，定稿後才由 5.2 產生正式檔）
-- [ ] 5.2 由選定原圖產生 `favicon.png`、`pwa-192.png`、`pwa-512.png`、`apple-touch-icon.png`，並另外產生角色置中於 80% 安全區的 `pwa-maskable-512.png`；以截圖確認 32×32 可辨識、maskable 圓形遮罩下角色完整
+- [x] 5.1 由 Codex 依 ip-as-logo 流程（design 第 7 節）提出三個方向並經使用者確認後產生六張候選，使用者選定一張；交付至少 1024×1024 的原圖供審查（不放進 `public/`，定稿後才由 5.2 產生正式檔）
+- [x] 5.2 由選定原圖產生 `favicon.png`、`pwa-192.png`、`pwa-512.png`、`apple-touch-icon.png`，並另外產生角色置中於 80% 安全區的 `pwa-maskable-512.png`；以截圖確認 32×32 可辨識、maskable 圓形遮罩下角色完整
 
 ## 6. 整合驗證與部署
 
