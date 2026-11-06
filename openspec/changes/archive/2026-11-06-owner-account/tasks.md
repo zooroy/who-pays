@@ -37,9 +37,9 @@
 ## 4. 整合驗證與部署
 
 - [x] 4.1 執行 `npm run lint && npm test && npm run build && supabase test db`，全部通過
-- [ ] 4.2 正式環境（由使用者執行，design 的 Migration Plan）：
+- [x] 4.2 正式環境（由使用者執行，design 的 Migration Plan）：
   1. `supabase db push`
   2. 在後台建立擁有者帳號（匿名登入與註冊維持開啟）
   3. 執行 SQL 登記擁有者
   4. `npm run deploy`
-- [ ] 4.3 使用者在 iPhone 確認：Safari 與主畫面 App 分別登入後看到同一份資料、身份一致；朋友的手機用連結加入後只看到該旅程；刪除成員與重設連結都正常
+- [x] 4.3 使用者在 iPhone 確認：Safari 與主畫面 App 分別登入後看到同一份資料、身份一致；朋友的手機用連結加入後只看到該旅程；刪除成員與重設連結都正常
