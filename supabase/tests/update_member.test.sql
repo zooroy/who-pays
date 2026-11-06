@@ -5,6 +5,8 @@ select no_plan();
 insert into auth.users(id) values
  ('11111111-1111-4111-8111-111111111111'),
  ('22222222-2222-4222-8222-222222222222');
+-- Only the owner can create trips (owner-account design §1).
+insert into public.app_owners(user_id) values ('11111111-1111-4111-8111-111111111111');
 create temporary table test_state(key text primary key, value jsonb);
 grant all on test_state to authenticated;
 set local role authenticated;

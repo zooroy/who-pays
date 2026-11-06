@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router'
+import { Navigate, useNavigate } from 'react-router'
 import { AppShell, AvatarPicker, Button, Notice, SelectField, TextField } from '../../components'
 import { AVATARS, memberName, type AvatarId } from '../../lib/avatars'
 import { CURRENCIES, isCurrencyCode, type CurrencyCode } from '../../lib/money'
-import { membershipError, saveIdentity } from '../../lib/identity'
+import { membershipError } from '../../lib/identity'
+import { useAccount } from '../account/account'
 import { createTrip } from './api'
 
 export function CreateTripForm() {
@@ -23,7 +24,6 @@ export function CreateTripForm() {
     setError('')
     try {
       const trip = await createTrip(name.trim(), currency, memberName(yourName, avatar), avatar)
-      saveIdentity(trip.tripId, trip.memberId)
       navigate(`/t/${trip.shareToken}`)
     } catch (err) {
       setError(membershipError(err))
@@ -67,7 +67,11 @@ export function CreateTripForm() {
   )
 }
 
+/** Only the owner can create trips (owner-account spec); everyone else goes home. */
 export function CreateTrip() {
+  const account = useAccount()
+  if (account.isPending) return null
+  if (!account.data?.isOwner) return <Navigate to="/" replace />
   return (
     <AppShell title="建立旅程" back={{ to: '/', label: '回到我的旅程' }}>
       <CreateTripForm />

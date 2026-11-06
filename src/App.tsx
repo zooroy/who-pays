@@ -2,6 +2,8 @@ import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-quer
 import { BrowserRouter, Route, Routes } from 'react-router'
 import { AppShell, Button, Notice } from './components'
 import { ensureSession } from './lib/supabase'
+import { LoginPage } from './features/account/LoginPage'
+import { migrateLocalIdentities } from './features/trip/api'
 import { CreateTrip } from './features/trip/CreateTrip'
 import { MyTrips } from './features/trip/MyTrips'
 import { TripPage } from './features/trip/TripPage'
@@ -13,6 +15,8 @@ function AuthenticatedApp() {
     queryKey: ['session'],
     queryFn: async () => {
       await ensureSession()
+      // Older versions kept identities in localStorage; move them once (design §3).
+      await migrateLocalIdentities().catch(() => undefined)
       return true
     },
     staleTime: Infinity,
@@ -39,6 +43,7 @@ function AuthenticatedApp() {
     <Routes>
       <Route path="/" element={<MyTrips />} />
       <Route path="/new" element={<CreateTrip />} />
+      <Route path="/login" element={<LoginPage />} />
       <Route path="/t/:shareToken" element={<TripPage />} />
       <Route path="/t/:shareToken/expenses/new" element={<TripPage />} />
       <Route path="/t/:shareToken/expenses/:expenseId" element={<TripPage />} />

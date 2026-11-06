@@ -2,6 +2,7 @@
 // Checks that a trip member receives INSERT, UPDATE and DELETE through the same
 // subscription shape the app uses (filtered INSERT/UPDATE, unfiltered DELETE). Creates two anonymous users.
 import { createClient } from '@supabase/supabase-js'
+import { signInOwner } from './owner.ts'
 import assert from 'node:assert/strict'
 
 const url = process.env.VITE_SUPABASE_URL
@@ -13,11 +14,10 @@ const seen: string[] = []
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 try {
-  for (const client of [a, b]) {
-    const { data, error } = await client.auth.signInAnonymously()
-    if (error) throw error
-    await client.realtime.setAuth(data.session!.access_token)
-  }
+  await a.realtime.setAuth(await signInOwner(a))
+  const anon = await b.auth.signInAnonymously()
+  if (anon.error) throw anon.error
+  await b.realtime.setAuth(anon.data.session!.access_token)
   const created = await a.rpc('create_trip', {
     name: 'Delete check',
     default_currency: 'JPY',

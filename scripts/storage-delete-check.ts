@@ -1,5 +1,6 @@
 // Run: node --env-file=.env.local scripts/storage-delete-check.ts
 import { createClient } from '@supabase/supabase-js'
+import { signInOwner } from './owner.ts'
 import assert from 'node:assert/strict'
 
 const url = process.env.VITE_SUPABASE_URL
@@ -12,10 +13,9 @@ const clients = Array.from({ length: 2 }, () =>
 )
 const [a, c] = clients
 try {
-  for (const client of clients) {
-    const { error } = await client.auth.signInAnonymously()
-    if (error) throw error
-  }
+  await signInOwner(a)
+  const anon = await c.auth.signInAnonymously()
+  if (anon.error) throw anon.error
   const created = await a.rpc('create_trip', {
     name: 'Storage delete check',
     default_currency: 'JPY',

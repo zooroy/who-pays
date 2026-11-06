@@ -8,6 +8,8 @@ insert into auth.users(id) values
 -- Temporary state is accessible to the caller; assertions on protected tables run
 -- as postgres, so they only count rows of the trips this test creates (a local
 -- database may already hold other data).
+-- Only the owner can create trips (owner-account design §1).
+insert into public.app_owners(user_id) values ('11111111-1111-4111-8111-111111111111');
 create temporary table test_state(key text primary key, value jsonb);
 grant all on test_state to authenticated;
 set local role authenticated;
@@ -37,7 +39,7 @@ select is((select count(*) from public.expense_splits where trip_id in (select (
 select is((select count(*) from public.expense_items where trip_id in (select (value->>'trip_id')::uuid from test_state where key in ('trip','other'))),1::bigint,'failed creates leave no items');
 select ok((select value->>'share_token' ~ '^[A-Za-z0-9]{22}$' from test_state where key='trip'), 'base62 token length');
 select is((select count(*) from public.trip_access where trip_id in (select (value->>'trip_id')::uuid from test_state where key in ('trip','other'))),2::bigint,'creator access created');
-select is((select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and c.relrowsecurity),7::bigint,'all seven tables have RLS');
+select is((select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind='r' and c.relrowsecurity),8::bigint,'all eight tables have RLS (incl. app_owners)');
 update test_state set value = value || jsonb_build_object('id',(select value #>> '{}' from test_state where key='expense')) where key='payload';
 set local role authenticated;
 select throws_ok($$select public.upsert_expense((select value || '{"split_member_ids":[]}'::jsonb from test_state where key='payload'))$$,'22023','SPLITTERS_REQUIRED','empty split update rejected');

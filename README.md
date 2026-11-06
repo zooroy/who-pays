@@ -52,7 +52,16 @@
 
    修改環境變數後需重新啟動 Vite。結束開發時可執行 `supabase stop`。
 
-七張資料表均啟用 RLS：成員只能讀取自己有 `trip_access` 的旅程；寫入一律經由 RPC（還款紀錄除外，可由成員直接新增與刪除）。收據照片存在私有的 `receipts` bucket，路徑為 `<trip_id>/<uuid>.jpg`，同樣依旅程權限控管。
+6. **本機擁有者帳號**：只有擁有者能建立旅程。在 `.env.local` 加上 `OWNER_EMAIL` 與 `OWNER_PASSWORD`（自訂的本機測試值），再用本機的 `SERVICE_ROLE_KEY` 執行一次（每次 `supabase db reset` 後要重跑）：
+
+   ```sh
+   SERVICE_ROLE_KEY=<supabase status -o env 的 SERVICE_ROLE_KEY> \
+     node --env-file=.env.local scripts/create-local-owner.ts
+   ```
+
+   之後在 App 首頁按「擁有者登入」。腳本只接受本機網址；`SERVICE_ROLE_KEY` 只放在指令列，不要寫進任何 `VITE_` 變數。
+
+八張資料表均啟用 RLS：成員只能讀取自己有 `trip_access` 的旅程，登記在 `app_owners` 的擁有者可讀取全部旅程（`app_owners` 本身不開放任何讀寫）；寫入一律經由 RPC（還款紀錄除外，可由成員直接新增與刪除）。收據照片存在私有的 `receipts` bucket，路徑為 `<trip_id>/<uuid>.jpg`，同樣依旅程權限控管。
 
 ### 收據辨識（本機）
 
@@ -75,7 +84,7 @@ supabase test db      # 啟動 Supabase 並完成 db reset 後執行 pgTAP
 
 SQL 測試在 transaction 內建立測試使用者，以 `authenticated` 角色及 JWT claims 呼叫 RPC 與查詢，最後 rollback。
 
-`scripts/` 底下的檢查腳本會實際連線（本機或正式環境），每次建立少量匿名使用者（匿名登入每 IP 每小時上限 30 次）：
+`scripts/` 底下的檢查腳本會實際連線（本機或正式環境），以擁有者帳號建立旅程（需要 env 檔中的 `OWNER_EMAIL`、`OWNER_PASSWORD`），並建立少量匿名使用者（匿名登入每 IP 每小時上限 30 次）：
 
 ```sh
 node --env-file=.env.local scripts/realtime-check.ts          # 即時同步只送給同旅程成員
@@ -88,14 +97,19 @@ node --env-file=.env.local scripts/receipt-function-check.ts  # parse-receipt �
 
 ## RPC 契約
 
-所有 RPC 僅授權 `authenticated` 執行，需先匿名登入取得 JWT。
+所有 RPC 僅授權 `authenticated` 執行，需先登入（朋友為匿名登入，擁有者為 email 密碼登入）取得 JWT。
 
-- `create_trip(name, default_currency, member_name, avatar_id)` 回傳 `{ trip_id, share_token, member_id }`。
+- `is_owner()` 回傳目前使用者是否登記在 `app_owners`。
+- `create_trip(name, default_currency, member_name, avatar_id)` 回傳 `{ trip_id, share_token, member_id }`，只限擁有者；同時記錄建立者在此旅程的身份。
 - `join_trip(share_token)` 回傳旅程 UUID；重複加入不會重複建立權限。
 - `add_member(trip_id, name, avatar_id)` 回傳成員 UUID，需旅程存取權。
 - `update_member(member_id, name, avatar_id)` 回傳 void，需該成員所屬旅程的存取權；旅程中任何成員都能修改任何成員的名字與頭像。成員不存在時同樣回 `TRIP_ACCESS_DENIED`，頭像已被其他成員使用時回 `AVATAR_TAKEN`。
 - `upsert_expense(payload)` 回傳支出 UUID，需旅程存取權。新增省略 `id`，修改傳入既有 `id`；修改為整筆替換，不是部分更新。`member_id` 是目前認領的成員，新增時寫入 `created_by` 與 `updated_by`，修改時保留原建立者。
 - `delete_expense(expense_id)` 回傳 void，需旅程存取權；連帶刪除分攤及品項，不處理 Storage 照片。
+- `set_my_member(trip_id, member_id)` 回傳 void，需旅程存取權；記錄目前使用者在此旅程是哪位成員（`member_id` 傳 null 為清除）。讀取時直接查自己的 `trip_access.member_id`。
+- `delete_member(member_id)` 回傳 void，需旅程存取權；成員有任何支出（付款、分攤、建立、修改）或還款紀錄時回 `MEMBER_HAS_RECORDS`，`details` 為相關紀錄數量。使用該身份的人 `member_id` 會變成 null。
+- `delete_trip(trip_id)` 回傳 void，只限擁有者；刪除旅程與其所有資料。收據照片要由呼叫端先以 Storage API 刪除。
+- `reset_share_token(trip_id)` 回傳新的分享碼，只限擁有者；舊分享碼立即失效，已加入的人保留存取權。
 
 `upsert_expense` payload 範例（UUID 請替換為 RPC 回傳值）：
 
@@ -125,8 +139,10 @@ node --env-file=.env.local scripts/receipt-function-check.ts  # parse-receipt �
 | --- | --- | --- |
 | `42501` | `AUTH_REQUIRED` | 缺少使用者身份 |
 | `42501` | `TRIP_ACCESS_DENIED` | 沒有旅程存取權（刪除不存在支出亦同） |
+| `42501` | `OWNER_REQUIRED` | 只有擁有者能執行（建立、刪除旅程，重設分享連結） |
+| `P0001` | `MEMBER_HAS_RECORDS` | 成員還有支出或還款紀錄，不能刪除 |
 | `22023` | `NAME_REQUIRED` | 建立旅程時名稱或成員名稱為空 |
-| `P0002` | `TRIP_NOT_FOUND` | 分享連結無效 |
+| `P0002` | `TRIP_NOT_FOUND` | 分享連結無效，或要刪除／重設的旅程不存在 |
 | `P0001` | `AVATAR_TAKEN` | 頭像已被選走 |
 | `22023` | `SPLITTERS_REQUIRED` | 未提供至少一位分攤者 |
 | `22023` | `INVALID_MEMBER` | 目前成員不屬於此旅程 |
@@ -151,16 +167,25 @@ node --env-file=.env.local scripts/receipt-function-check.ts  # parse-receipt �
    supabase db push                        # 套用所有 migrations
    ```
 
-2. **開啟匿名登入**：Dashboard → Authentication → Sign In / Providers → User Signups，打開 **Allow anonymous sign-ins** 並儲存。「Allow new users to sign up」也必須維持開啟。
+2. **開啟匿名登入**：Dashboard → Authentication → Sign In / Providers → User Signups，打開 **Allow anonymous sign-ins** 並儲存。「Allow new users to sign up」與 Email provider 也必須維持開啟（關掉會擋住匿名登入或擁有者的密碼登入）。
 
-3. **Edge Function 與 secrets**：
+3. **擁有者帳號**：Dashboard → Authentication → Users → **Add user** → Create new user，輸入 email 與密碼並勾選 Auto Confirm User。再到 SQL Editor 執行（替換成你的 email）：
+
+   ```sql
+   insert into public.app_owners(user_id)
+   select id from auth.users where email = '<擁有者 email>';
+   ```
+
+   有人自行註冊的 email 帳號不在這張表中，只會被當成一般朋友，沒有擁有者權限。
+
+4. **Edge Function 與 secrets**：
 
    ```sh
    supabase secrets set --env-file supabase/functions/.env   # GEMINI_API_KEY（與選填的 GEMINI_MODEL）
    supabase functions deploy parse-receipt --use-api
    ```
 
-4. **前端環境變數**：建立 `.env.production.local`（已被 `.gitignore` 排除）：
+5. **前端環境變數**：建立 `.env.production.local`（已被 `.gitignore` 排除）：
 
    ```sh
    VITE_SUPABASE_URL=https://<project-ref>.supabase.co
@@ -169,7 +194,7 @@ node --env-file=.env.local scripts/receipt-function-check.ts  # parse-receipt �
 
    anon key 本來就會出現在瀏覽器中，是公開值；**不要**放 service role、secret key 或 Gemini key。
 
-5. **前端**：在一般終端機執行一次 `npx wrangler login`，之後：
+6. **前端**：在一般終端機執行一次 `npx wrangler login`，之後：
 
    ```sh
    npm run deploy      # 以 .env.production.local 建置，並上傳 dist/
@@ -177,7 +202,7 @@ node --env-file=.env.local scripts/receipt-function-check.ts  # parse-receipt �
 
    `wrangler.jsonc` 設定了 `single-page-application`，讓 `/t/<token>` 分享連結直接開啟 App。
 
-6. **檢查正式環境**：用上面「測試與建置」的 `scripts/` 指令，把 `--env-file` 換成 `.env.production.local`。
+7. **檢查正式環境**：用上面「測試與建置」的 `scripts/` 指令，把 `--env-file` 換成 `.env.production.local`。
 
 ### 之後更新
 

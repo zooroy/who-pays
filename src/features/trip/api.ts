@@ -1,6 +1,7 @@
 import { supabase } from '../../lib/supabase'
 import { isAvatarId, type AvatarId } from '../../lib/avatars'
 import { isCurrencyCode, type CurrencyCode } from '../../lib/money'
+import { pendingMigrations, readLocalIdentities, type RemoteIdentity } from '../../lib/identity'
 
 export interface Member {
   id: string
@@ -110,12 +111,14 @@ export async function updateMember(
 }
 export interface MyTrip extends Trip {
   members: { id: string; avatar_id: AvatarId }[]
+  /** Who this user is in the trip, if chosen. */
+  my_member_id: string | null
 }
-/** Every trip this device's anonymous user can open; RLS limits the rows (design §1). */
+/** Trips this user can open: all of them for the owner, joined ones for friends (RLS). */
 export async function getMyTrips(): Promise<MyTrip[]> {
   const { data, error } = await supabase
     .from('trips')
-    .select('id,name,share_token,default_currency,members(id,avatar_id)')
+    .select('id,name,share_token,default_currency,members(id,avatar_id),trip_access(member_id)')
     .order('created_at', { ascending: false })
   if (error) throw error
   return data.map((row: unknown) => {
@@ -125,7 +128,8 @@ export async function getMyTrips(): Promise<MyTrip[]> {
       typeof row.name !== 'string' ||
       typeof row.share_token !== 'string' ||
       !isCurrencyCode(row.default_currency) ||
-      !Array.isArray(row.members)
+      !Array.isArray(row.members) ||
+      !Array.isArray(row.trip_access)
     )
       throw new Error('Invalid trip')
     const members = row.members.map((m: unknown) => {
@@ -133,12 +137,99 @@ export async function getMyTrips(): Promise<MyTrip[]> {
         throw new Error('Invalid member')
       return { id: m.id, avatar_id: m.avatar_id }
     })
+    // RLS returns only this user's own access row.
+    const access: unknown = row.trip_access[0]
+    const mine = record(access) && typeof access.member_id === 'string' ? access.member_id : null
     return {
       id: row.id,
       name: row.name,
       share_token: row.share_token,
       default_currency: row.default_currency,
       members,
+      my_member_id: mine,
     }
   })
+}
+
+export async function isOwner(): Promise<boolean> {
+  const { data, error } = await supabase.rpc('is_owner')
+  if (error) throw error
+  return data === true
+}
+
+/** This user's access rows (RLS returns only their own). */
+export async function getMyAccess(): Promise<RemoteIdentity[]> {
+  const { data, error } = await supabase.from('trip_access').select('trip_id,member_id')
+  if (error) throw error
+  return data.map((row: unknown) => {
+    if (
+      !record(row) ||
+      typeof row.trip_id !== 'string' ||
+      !(typeof row.member_id === 'string' || row.member_id === null)
+    )
+      throw new Error('Invalid access row')
+    return { trip_id: row.trip_id, member_id: row.member_id }
+  })
+}
+export const meKey = (tripId: string) => [...tripKey(tripId), 'me'] as const
+export async function getMyMember(tripId: string): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('trip_access')
+    .select('member_id')
+    .eq('trip_id', tripId)
+    .maybeSingle()
+  if (error) throw error
+  return record(data) && typeof data.member_id === 'string' ? data.member_id : null
+}
+export async function setMyMember(tripId: string, memberId: string | null): Promise<void> {
+  const { error } = await supabase.rpc('set_my_member', { trip_id: tripId, member_id: memberId })
+  if (error) throw error
+}
+
+/**
+ * Moves identities kept in localStorage by older versions into the database
+ * (design §3). A key is removed once it is stored, or once the database rejects it
+ * (for example the member was deleted); network failures keep it for next time.
+ */
+export async function migrateLocalIdentities(): Promise<void> {
+  const local = readLocalIdentities(localStorage)
+  if (local.length === 0) return
+  const pending = pendingMigrations(local, await getMyAccess())
+  const pendingKeys = new Set(pending.map((p) => p.key))
+  for (const l of local) if (!pendingKeys.has(l.key)) localStorage.removeItem(l.key)
+  for (const p of pending) {
+    try {
+      await setMyMember(p.tripId, p.memberId)
+      localStorage.removeItem(p.key)
+    } catch (err) {
+      if (record(err) && typeof err.code === 'string' && err.code !== '')
+        localStorage.removeItem(p.key)
+    }
+  }
+}
+
+export async function deleteMember(memberId: string): Promise<void> {
+  const { error } = await supabase.rpc('delete_member', { member_id: memberId })
+  if (error) throw error
+}
+export async function resetShareToken(tripId: string): Promise<string> {
+  const { data, error } = await supabase.rpc('reset_share_token', { trip_id: tripId })
+  if (error) throw error
+  if (typeof data !== 'string') throw new Error('Invalid share token')
+  return data
+}
+/** Removes the trip's receipt photos first; if that fails, the trip is left intact (design §5). */
+export async function deleteTrip(tripId: string): Promise<void> {
+  const bucket = supabase.storage.from('receipts')
+  for (;;) {
+    const { data, error } = await bucket.list(tripId, { limit: 100 })
+    if (error) throw error
+    if (data.length === 0) break
+    const removed = await bucket.remove(data.map((f) => `${tripId}/${f.name}`))
+    if (removed.error) throw removed.error
+    // Nothing removed means the photos cannot be deleted; stop instead of looping.
+    if (removed.data.length === 0) throw new Error('Receipt photos were not removed')
+  }
+  const { error } = await supabase.rpc('delete_trip', { trip_id: tripId })
+  if (error) throw error
 }

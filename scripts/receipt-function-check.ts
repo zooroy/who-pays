@@ -2,6 +2,7 @@
 // Requires `supabase functions serve`. Checks parse-receipt access control and,
 // when a photo is given and GEMINI_API_KEY is set, prints the parsed result.
 import { createClient } from '@supabase/supabase-js'
+import { signInOwner } from './owner.ts'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 
@@ -31,9 +32,9 @@ async function call(token: string | null, body: unknown) {
   return { status: res.status, body: (await res.json().catch(() => null)) as unknown }
 }
 
-const a = await owner.auth.signInAnonymously()
+const ownerToken = await signInOwner(owner)
 const b = await stranger.auth.signInAnonymously()
-if (a.error || b.error) throw a.error ?? b.error
+if (b.error) throw b.error
 const created = await owner.rpc('create_trip', {
   name: 'Receipt check',
   default_currency: 'JPY',
@@ -48,7 +49,6 @@ const upload = await owner.storage
   .upload(path, photoPath ? await readFile(photoPath) : TINY_JPEG, { contentType: 'image/jpeg' })
 if (upload.error) throw upload.error
 
-const ownerToken = a.data.session!.access_token
 const strangerToken = b.data.session!.access_token
 const anon = await call(null, { trip_id: tripId, path })
 assert.equal(anon.status, 401, `no token: ${JSON.stringify(anon)}`)

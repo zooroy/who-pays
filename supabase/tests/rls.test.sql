@@ -9,6 +9,8 @@ insert into auth.users(id) values
   ('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'),
   ('cccccccc-cccc-4ccc-8ccc-cccccccccccc');
 
+-- Only the owner can create trips (owner-account design §1).
+insert into public.app_owners(user_id) values ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');
 create temporary table t(key text primary key, value jsonb);
 grant all on t to authenticated, anon;
 
@@ -29,13 +31,14 @@ from t tr, t c where tr.key = 'trip' and c.key = 'cat';
 insert into storage.objects(bucket_id, name)
 select 'receipts', (value->>'trip_id') || '/r1.jpg' from t where key = 'trip';
 
-select is((select count(*) from public.trips)::int, 1, 'owner sees the trip');
-select is((select count(*) from public.members)::int, 2, 'owner sees members');
-select is((select count(*) from public.expenses)::int, 1, 'owner sees expenses');
-select is((select count(*) from public.expense_splits)::int, 1, 'owner sees splits');
-select is((select count(*) from public.expense_items)::int, 1, 'owner sees items');
-select is((select count(*) from public.settlements)::int, 1, 'owner sees settlements');
-select is((select count(*) from storage.objects where bucket_id = 'receipts')::int, 1, 'owner sees the receipt');
+-- Scoped to this test's trip: the owner can read every trip in a local database.
+select is((select count(*) from public.trips where id = (select (value->>'trip_id')::uuid from t where key = 'trip'))::int, 1, 'owner sees the trip');
+select is((select count(*) from public.members where trip_id = (select (value->>'trip_id')::uuid from t where key = 'trip'))::int, 2, 'owner sees members');
+select is((select count(*) from public.expenses where trip_id = (select (value->>'trip_id')::uuid from t where key = 'trip'))::int, 1, 'owner sees expenses');
+select is((select count(*) from public.expense_splits where trip_id = (select (value->>'trip_id')::uuid from t where key = 'trip'))::int, 1, 'owner sees splits');
+select is((select count(*) from public.expense_items where trip_id = (select (value->>'trip_id')::uuid from t where key = 'trip'))::int, 1, 'owner sees items');
+select is((select count(*) from public.settlements where trip_id = (select (value->>'trip_id')::uuid from t where key = 'trip'))::int, 1, 'owner sees settlements');
+select is((select count(*) from storage.objects where bucket_id = 'receipts' and name like (select (value->>'trip_id')::uuid from t where key = 'trip') || '/%')::int, 1, 'owner sees the receipt');
 
 -- Stranger: authenticated but never joined.
 set local request.jwt.claims = '{"sub":"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb","role":"authenticated"}';

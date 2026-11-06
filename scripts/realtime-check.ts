@@ -1,6 +1,7 @@
 // Run: node --env-file=<local-env-file> scripts/realtime-check.ts (Node 22.18+).
 // Requires VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY; creates only three anonymous users.
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { signInOwner } from './owner.ts'
 import assert from 'node:assert/strict'
 
 const url = process.env.VITE_SUPABASE_URL
@@ -44,7 +45,8 @@ async function subscribe(client: SupabaseClient, label: string, onEvent: () => v
   })
 }
 try {
-  for (const client of clients) {
+  await a.realtime.setAuth(await signInOwner(a))
+  for (const client of clients.filter((c) => c !== a)) {
     const { data, error } = await client.auth.signInAnonymously()
     if (error) throw error
     assert(data.session)

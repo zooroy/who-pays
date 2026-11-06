@@ -52,8 +52,31 @@
   gap: var(--space-3);
 }
 .my-trips__open {
-  padding-top: var(--space-5);
+  padding-top: var(--space-3);
   border-top: 2px dashed var(--color-punch);
+}
+.my-trips__open > .trip-stack {
+  padding-top: var(--space-2);
+}
+.my-trips__open summary {
+  cursor: pointer;
+  min-height: var(--touch-min);
+  display: flex;
+  align-items: center;
+  list-style: none;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+.my-trips__open summary::-webkit-details-marker {
+  display: none;
+}
+.my-trips__open[open] summary {
+  text-decoration: none;
+}
+.my-trips__account {
+  display: grid;
+  justify-items: center;
 }
 .my-trips__form {
   gap: var(--space-3);
@@ -61,4 +84,9 @@
 .trip-member__name {
   flex: 1;
   min-width: 0;
+}
+/* Destructive actions sit below a dashed tear line, away from everyday buttons. */
+.trip-danger {
+  padding-top: var(--space-3);
+  border-top: 2px dashed var(--color-punch);
 }
