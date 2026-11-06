@@ -8,12 +8,23 @@
 
 ## 規格來源（先讀這些再動手）
 
-所有需求與設計都在 OpenSpec change 裡，**以這些文件為準**：
+需求與設計都在 `openspec/` 裡，**以這些文件為準**：
 
-- `openspec/changes/build-who-pays-mvp/proposal.md`：範圍，以及哪些事不做
-- `openspec/changes/build-who-pays-mvp/specs/*/spec.md`：行為規格，每個 Scenario 都要能驗證
-- `openspec/changes/build-who-pays-mvp/design.md`：架構、資料模型、結算演算法、收據 JSON 格式、視覺 tokens
-- `openspec/changes/build-who-pays-mvp/tasks.md`：任務清單
+- **目前的系統行為**：`openspec/specs/<capability>/spec.md`，每個 Scenario 都要能驗證。
+  - `trip-membership`：建立與加入旅程、頭像、身份、成員的新增、編輯、刪除
+  - `owner-account`：擁有者登入，以及只有擁有者能做的操作
+  - `expense-tracking`：支出的新增、編輯、刪除
+  - `receipt-scanning`：收據拍照與辨識
+  - `settlement`：結算與還款
+- **進行中的工作**：`openspec/changes/<change-name>/`。被指派任務時，以該 change 為準：
+  - `proposal.md`：範圍，以及哪些事不做
+  - `specs/*/spec.md`：對上面主規格的修改（ADDED／MODIFIED）
+  - `design.md`：這次的設計決策
+  - `tasks.md`：任務清單
+- **已完成的設計紀錄**：`openspec/changes/archive/`，需要背景時查閱：
+  - `2026-11-05-build-who-pays-mvp/design.md`：架構、資料模型、結算演算法、收據 JSON 格式、視覺 tokens
+  - `2026-11-05-polish-after-first-trip/design.md`：我的旅程、編輯成員、切換身份、App icon
+  - `2026-11-06-owner-account/design.md`：擁有者名單 `app_owners`、身份存在 `trip_access.member_id`、刪除成員與旅程、重設分享連結
 
 ## 協作規則
 
