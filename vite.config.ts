@@ -7,7 +7,10 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // The new service worker waits; src/lib/appUpdate.ts activates it at a safe
+      // moment so a reload never interrupts a form (app-auto-update design §1).
+      registerType: 'prompt',
+      injectRegister: false,
       includeManifestIcons: false, // already matched by globPatterns
       manifest: {
         name: '誰付錢',

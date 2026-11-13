@@ -1,6 +1,8 @@
+import { useEffect } from 'react'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
-import { BrowserRouter, Route, Routes } from 'react-router'
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router'
 import { AppShell, Button, Notice } from './components'
+import { startAppUpdates, tryApplyUpdate } from './lib/appUpdate'
 import { ensureSession } from './lib/supabase'
 import { LoginPage } from './features/account/LoginPage'
 import { migrateLocalIdentities } from './features/trip/api'
@@ -10,6 +12,21 @@ import { TripPage } from './features/trip/TripPage'
 import './features/trip/trip.css'
 
 const queryClient = new QueryClient()
+void startAppUpdates()
+
+/**
+ * A waiting deploy is applied when the user lands on a safe page, e.g. back on the
+ * expense list after saving (app-auto-update design §3). Runs after the new page
+ * has rendered, so a form that just closed is no longer in the DOM.
+ */
+function ApplyUpdateOnNavigate() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    const timer = window.setTimeout(tryApplyUpdate, 300)
+    return () => window.clearTimeout(timer)
+  }, [pathname])
+  return null
+}
 function AuthenticatedApp() {
   const session = useQuery({
     queryKey: ['session'],
@@ -64,6 +81,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+        <ApplyUpdateOnNavigate />
         <AuthenticatedApp />
       </BrowserRouter>
     </QueryClientProvider>
