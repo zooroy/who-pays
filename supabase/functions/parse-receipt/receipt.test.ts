@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { extractResult, isRetryable, parseRequest, upstreamError } from './receipt.ts'
+import {
+  extractResult,
+  isRetryable,
+  parseRequest,
+  timeoutError,
+  upstreamError,
+} from './receipt.ts'
 
 const trip = '6f1c2b8e-1d2a-4b3c-8d4e-5f6a7b8c9d0e'
 const photo = 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d'
@@ -22,11 +28,22 @@ describe('parseRequest', () => {
 })
 
 describe('upstreamError', () => {
-  it('maps 429 and 402 to QUOTA_EXCEEDED and everything else to UPSTREAM_ERROR', () => {
+  it('maps 429 and 402 to QUOTA_EXCEEDED, 503 to MODEL_BUSY, everything else to UPSTREAM_ERROR', () => {
     expect(upstreamError(429)).toBe('QUOTA_EXCEEDED')
     expect(upstreamError(402)).toBe('QUOTA_EXCEEDED')
+    expect(upstreamError(503)).toBe('MODEL_BUSY')
+    expect(upstreamError(500)).toBe('UPSTREAM_ERROR')
     expect(upstreamError(400)).toBe('UPSTREAM_ERROR')
-    expect(upstreamError(503)).toBe('UPSTREAM_ERROR')
+  })
+})
+
+describe('timeoutError', () => {
+  it('reports a busy model when the attempt before the timeout got a 503', () => {
+    expect(timeoutError(503)).toBe('MODEL_BUSY')
+  })
+  it('reports a plain timeout otherwise', () => {
+    expect(timeoutError(500)).toBe('TIMEOUT')
+    expect(timeoutError(null)).toBe('TIMEOUT')
   })
 })
 

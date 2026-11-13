@@ -46,6 +46,7 @@ const KNOWN: readonly ScanFailure[] = [
   'QUOTA_EXCEEDED',
   'NOT_A_RECEIPT',
   'TIMEOUT',
+  'MODEL_BUSY',
   'UPSTREAM_ERROR',
   'FORBIDDEN',
 ]

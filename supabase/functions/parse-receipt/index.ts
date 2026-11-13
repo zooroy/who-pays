@@ -9,6 +9,7 @@ import {
   extractResult,
   isRetryable,
   parseRequest,
+  timeoutError,
   upstreamError,
   type ReceiptErrorCode,
 } from './receipt.ts'
@@ -102,6 +103,8 @@ Deno.serve(async (req) => {
   // One shared 25s budget; a busy model (500/503) gets one retry inside it.
   const signal = AbortSignal.timeout(TIMEOUT_MS)
   let response: Response | null = null
+  // Status of the last attempt that answered, so a timeout after a 503 reads as busy.
+  let lastStatus: number | null = null
   try {
     for (let attempt = 0; attempt < 2; attempt++) {
       if (attempt > 0) await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS))
@@ -114,13 +117,14 @@ Deno.serve(async (req) => {
           body,
         },
       )
+      lastStatus = response.status
       if (!isRetryable(response.status)) break
       // Log the status and Google's message only; never the request (it carries the key header).
       console.error('parse-receipt: Gemini', response.status, (await response.text()).slice(0, 300))
     }
   } catch (error) {
     if (error instanceof DOMException && ['TimeoutError', 'AbortError'].includes(error.name))
-      return fail('TIMEOUT')
+      return fail(timeoutError(lastStatus))
     console.error('parse-receipt: Gemini request failed', error)
     return fail('UPSTREAM_ERROR')
   }

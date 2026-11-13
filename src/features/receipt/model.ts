@@ -119,7 +119,13 @@ export function totalMismatch(
 }
 
 export type ScanFailure =
-  'QUOTA_EXCEEDED' | 'NOT_A_RECEIPT' | 'TIMEOUT' | 'UPSTREAM_ERROR' | 'NETWORK' | 'FORBIDDEN'
+  | 'QUOTA_EXCEEDED'
+  | 'NOT_A_RECEIPT'
+  | 'TIMEOUT'
+  | 'MODEL_BUSY'
+  | 'UPSTREAM_ERROR'
+  | 'NETWORK'
+  | 'FORBIDDEN'
 
 export function scanFailureMessage(code: ScanFailure): string {
   switch (code) {
@@ -129,6 +135,8 @@ export function scanFailureMessage(code: ScanFailure): string {
       return '這張照片無法辨識成收據，請手動輸入。'
     case 'TIMEOUT':
       return '辨識花太久時間了，請手動輸入。'
+    case 'MODEL_BUSY':
+      return '自動辨識現在太忙，請稍後再試或手動輸入。'
     case 'NETWORK':
       return '網路連線不穩，無法辨識收據，請手動輸入。'
     case 'FORBIDDEN':

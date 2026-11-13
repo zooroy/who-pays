@@ -81,6 +81,7 @@ export type ReceiptErrorCode =
   | 'QUOTA_EXCEEDED'
   | 'NOT_A_RECEIPT'
   | 'TIMEOUT'
+  | 'MODEL_BUSY'
   | 'UPSTREAM_ERROR'
 
 export const ERROR_STATUS: Record<ReceiptErrorCode, number> = {
@@ -90,15 +91,27 @@ export const ERROR_STATUS: Record<ReceiptErrorCode, number> = {
   QUOTA_EXCEEDED: 429,
   NOT_A_RECEIPT: 422,
   TIMEOUT: 504,
+  MODEL_BUSY: 503,
   UPSTREAM_ERROR: 502,
 }
 
 /**
  * Maps a Gemini HTTP status to our error code (design.md §7). 429 is the free-tier
- * rate limit; 402 is a billed project whose prepaid credits ran out.
+ * rate limit; 402 is a billed project whose prepaid credits ran out; 503 is Gemini
+ * saying the model is under high demand.
  */
 export function upstreamError(status: number): ReceiptErrorCode {
-  return status === 429 || status === 402 ? 'QUOTA_EXCEEDED' : 'UPSTREAM_ERROR'
+  if (status === 429 || status === 402) return 'QUOTA_EXCEEDED'
+  if (status === 503) return 'MODEL_BUSY'
+  return 'UPSTREAM_ERROR'
+}
+
+/**
+ * The 25s budget ran out. If the attempt before the retry got a 503, the model was
+ * busy rather than merely slow (receipt-busy-message design §2).
+ */
+export function timeoutError(lastStatus: number | null): ReceiptErrorCode {
+  return lastStatus === 503 ? 'MODEL_BUSY' : 'TIMEOUT'
 }
 
 /** Gemini overload or internal errors are usually momentary; worth one retry. */
