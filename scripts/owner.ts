@@ -5,7 +5,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 export async function signInOwner(client: SupabaseClient): Promise<string> {
   const email = process.env.OWNER_EMAIL
   const password = process.env.OWNER_PASSWORD
-  if (!email || !password) throw new Error('Set OWNER_EMAIL and OWNER_PASSWORD (see README)')
+  if (!email || !password) throw new Error('Set OWNER_EMAIL and OWNER_PASSWORD (see docs/development.md)')
   const { data, error } = await client.auth.signInWithPassword({ email, password })
   if (error) throw error
   return data.session.access_token

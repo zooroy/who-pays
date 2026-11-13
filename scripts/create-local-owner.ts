@@ -2,7 +2,7 @@
 // Creates the owner account on the LOCAL Supabase and registers it in app_owners.
 // Needs OWNER_EMAIL, OWNER_PASSWORD and the local SERVICE_ROLE_KEY (from
 // `supabase status -o env`, passed on the command line, never in a VITE_ variable).
-// Production owners are created in the Dashboard instead (README「部署」).
+// Production owners are created in the Dashboard instead (docs/development.md「部署」).
 import { createClient } from '@supabase/supabase-js'
 
 const url = process.env.VITE_SUPABASE_URL
