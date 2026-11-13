@@ -31,6 +31,7 @@ import {
 } from './api'
 import { MemberForm } from './MemberForm'
 import { useTripRealtime } from './useTripRealtime'
+import { shareUrl } from './shareLink'
 import { getExpenses } from '../expense/api'
 import { ExpenseList } from '../expense/ExpenseList'
 import { ExpenseForm } from '../expense/ExpenseForm'
@@ -198,7 +199,7 @@ function TripContent({
   }, [copied])
   async function copyLink() {
     try {
-      await navigator.clipboard.writeText(new URL(path, window.location.origin).href)
+      await navigator.clipboard.writeText(shareUrl(window.location.origin, trip.share_token))
       setCopied(true)
       setError('')
     } catch {

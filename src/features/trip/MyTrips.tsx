@@ -1,26 +1,15 @@
-import { useState, type FormEvent } from 'react'
+import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
-import {
-  AppShell,
-  Avatar,
-  Button,
-  LinkIcon,
-  Notice,
-  PlusIcon,
-  TextField,
-  Ticket,
-  TicketRow,
-} from '../../components'
+import { AppShell, Avatar, Button, Notice, PlusIcon, Ticket, TicketRow } from '../../components'
 import { CURRENCIES } from '../../lib/money'
 import { signOut, useAccount } from '../account/account'
 import { CreateTripForm } from './CreateTrip'
 import { getMyTrips, type MyTrip } from './api'
-import { parseShareToken } from './shareLink'
 
 /**
  * 我的旅程 (owner-account design §9): the owner sees every trip and can create one;
- * friends see the trips they joined, a folded 用旅程連結開啟 and 擁有者登入.
+ * friends see the trips they joined and 擁有者登入.
  */
 export function MyTrips() {
   const navigate = useNavigate()
@@ -67,7 +56,6 @@ export function MyTrips() {
       <AppShell title="誰付錢">
         <div className="trip-stack">
           <Notice>還沒有旅程。請向朋友索取旅程連結，點開就能加入。</Notice>
-          <OpenTripLink open />
           <AccountAction signedIn={signedIn} />
         </div>
       </AppShell>
@@ -82,12 +70,10 @@ export function MyTrips() {
             </li>
           ))}
         </ul>
-        {isOwner ? (
+        {isOwner && (
           <Button variant="secondary" icon={<PlusIcon />} onClick={() => navigate('/new')}>
             建立新旅程
           </Button>
-        ) : (
-          <OpenTripLink />
         )}
         <AccountAction signedIn={signedIn} />
       </div>
@@ -142,70 +128,5 @@ function TripTicket({ trip, onOpen }: { trip: MyTrip; onOpen: () => void }) {
         amount={CURRENCIES[trip.default_currency].label}
       />
     </Ticket>
-  )
-}
-
-/** Brings an existing trip into this browser or home screen app (design §3). */
-function OpenTripLink({ open: startOpen = false }: { open?: boolean }) {
-  const navigate = useNavigate()
-  const [text, setText] = useState('')
-  const [error, setError] = useState('')
-  const canPaste = typeof navigator.clipboard?.readText === 'function'
-  function open(value: string) {
-    const token = parseShareToken(value)
-    if (!token) {
-      setError('這不是有效的旅程連結，請貼上朋友分享的完整連結。')
-      return
-    }
-    navigate(`/t/${token}`)
-  }
-  function submit(event: FormEvent) {
-    event.preventDefault()
-    open(text)
-  }
-  async function paste() {
-    try {
-      const value = await navigator.clipboard.readText()
-      setText(value)
-      setError('')
-      open(value)
-    } catch {
-      // Denied or unsupported: typing or pasting by hand still works.
-    }
-  }
-  return (
-    <details className="my-trips__open" open={startOpen}>
-      <summary>用旅程連結開啟</summary>
-      <div className="trip-stack">
-        <p className="trip-hint">
-          在其他瀏覽器或主畫面 App 第一次使用時，貼上旅程連結，再選「我是……」就能接回原本的身份。
-        </p>
-        <form className="trip-stack my-trips__form" onSubmit={submit} noValidate>
-          <TextField
-            label="旅程連結"
-            value={text}
-            inputMode="url"
-            autoCapitalize="off"
-            autoCorrect="off"
-            spellCheck={false}
-            error={error || undefined}
-            onChange={(e) => {
-              setText(e.target.value)
-              setError('')
-            }}
-          />
-          <div className="trip-actions">
-            <Button type="submit" variant="secondary">
-              開啟旅程
-            </Button>
-            {canPaste && (
-              <Button variant="quiet" icon={<LinkIcon />} onClick={() => void paste()}>
-                貼上剪貼簿的連結
-              </Button>
-            )}
-          </div>
-        </form>
-      </div>
-    </details>
   )
 }

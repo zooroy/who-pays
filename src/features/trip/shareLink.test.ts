@@ -1,24 +1,20 @@
 import { describe, expect, it } from 'vitest'
-import { parseShareToken } from './shareLink'
+import { shareUrl } from './shareLink'
 
 const token = 'Ab3dEf6hIj9kLm2nOp5qRs'
 
-describe('parseShareToken', () => {
-  it('reads a full link', () => {
-    expect(parseShareToken(`https://who-pays.who-pays.workers.dev/t/${token}`)).toBe(token)
-  })
-  it('reads a link inside a message, with a trailing path', () => {
-    expect(parseShareToken(`一起記帳：who-pays.who-pays.workers.dev/t/${token}/settle 謝謝`)).toBe(
-      token,
+describe('shareUrl', () => {
+  it('builds a production link that LINE opens in the external browser', () => {
+    expect(shareUrl('https://who-pays.who-pays.workers.dev', token)).toBe(
+      `https://who-pays.who-pays.workers.dev/t/${token}?openExternalBrowser=1`,
     )
   })
-  it('reads a bare token', () => {
-    expect(parseShareToken(`  ${token}\n`)).toBe(token)
+  it('builds a local link the same way', () => {
+    expect(shareUrl('http://localhost:5173', token)).toBe(
+      `http://localhost:5173/t/${token}?openExternalBrowser=1`,
+    )
   })
-  it('rejects text that is not a share link', () => {
-    expect(parseShareToken('台南之旅')).toBeNull()
-    expect(parseShareToken('https://example.com/t/short')).toBeNull()
-    expect(parseShareToken(`https://example.com/t/${token}x`)).toBeNull()
-    expect(parseShareToken('')).toBeNull()
+  it('ignores a trailing slash on the origin', () => {
+    expect(shareUrl('http://localhost:5173/', token)).toBe(shareUrl('http://localhost:5173', token))
   })
 })
