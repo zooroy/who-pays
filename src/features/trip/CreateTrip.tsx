@@ -73,7 +73,7 @@ export function CreateTrip() {
   if (account.isPending) return null
   if (!account.data?.isOwner) return <Navigate to="/" replace />
   return (
-    <AppShell title="建立旅程" back={{ to: '/', label: '回到我的旅程' }}>
+    <AppShell title="建立旅程" back={{ to: '/', label: '我的旅程' }}>
       <CreateTripForm />
     </AppShell>
   )

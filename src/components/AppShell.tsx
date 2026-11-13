@@ -11,8 +11,13 @@ interface AppShellProps {
   thumbBar?: ReactNode
   /** Base path of the trip, e.g. /t/abc. Shows the 支出 / 結算 tabs when set. */
   tripPath?: string
-  /** Shows a back link before the title (to 我的旅程). */
-  back?: { to: string; label: string }
+  /**
+   * 「‹ <label>」above the title: up one level. A link (`to`) for pages, a button
+   * (`onClick`) for panels that have no URL. `label` names the destination.
+   */
+  back?: { label: string; to: string } | { label: string; onClick: () => void }
+  /** Hide the title visually when the content already has its own heading. */
+  titleHidden?: boolean
   children: ReactNode
 }
 
@@ -26,6 +31,7 @@ export function AppShell({
   thumbBar,
   tripPath,
   back,
+  titleHidden = false,
   children,
 }: AppShellProps) {
   return (
@@ -34,17 +40,8 @@ export function AppShell({
     >
       <header className="app-shell__header">
         <div className="app-shell__heading">
-          {back && (
-            <Link
-              className="app-shell__back"
-              to={back.to}
-              aria-label={back.label}
-              title={back.label}
-            >
-              <BackIcon />
-            </Link>
-          )}
-          <h1 className="app-shell__title">{title}</h1>
+          {back && <BackLink back={back} />}
+          <h1 className={`app-shell__title${titleHidden ? ' visually-hidden' : ''}`}>{title}</h1>
         </div>
         {headerExtra && <div className="app-shell__extra">{headerExtra}</div>}
       </header>
@@ -67,6 +64,27 @@ export function AppShell({
         </div>
       )}
     </div>
+  )
+}
+
+function BackLink({ back }: { back: NonNullable<AppShellProps['back']> }) {
+  const content = (
+    <>
+      <BackIcon />
+      <span>{back.label}</span>
+    </>
+  )
+  const label = `回到${back.label}`
+  if ('to' in back)
+    return (
+      <Link className="app-shell__back" to={back.to} aria-label={label}>
+        {content}
+      </Link>
+    )
+  return (
+    <button type="button" className="app-shell__back" onClick={back.onClick} aria-label={label}>
+      {content}
+    </button>
   )
 }
 

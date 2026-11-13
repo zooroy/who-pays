@@ -16,7 +16,6 @@ import { useAccount } from '../account/account'
 import {
   addMember,
   deleteMember,
-  deleteTrip,
   getMembers,
   getMyMember,
   getTrip,
@@ -31,6 +30,7 @@ import {
 } from './api'
 import { MemberForm } from './MemberForm'
 import { useTripRealtime } from './useTripRealtime'
+import { backTarget, type TripPanel } from './backTarget'
 import { shareUrl } from './shareLink'
 import { getExpenses } from '../expense/api'
 import { ExpenseList } from '../expense/ExpenseList'
@@ -42,7 +42,7 @@ import { PhotoInput } from '../receipt/PhotoInput'
 import { setPendingPhoto } from '../receipt/pending'
 import type { Expense } from '../expense/model'
 
-const HOME = { to: '/', label: '回到我的旅程' }
+const HOME = { to: '/', label: '我的旅程' }
 
 export function TripPage() {
   const { shareToken = '' } = useParams()
@@ -153,9 +153,7 @@ function TripContent({
   const location = useLocation()
   const account = useAccount()
   const isOwner = account.data?.isOwner === true
-  const [panel, setPanel] = useState<
-    'members' | 'add' | 'switch' | 'settings' | { edit: string } | null
-  >(null)
+  const [panel, setPanel] = useState<TripPanel>(null)
   // Leaving a page closes the member panel, so it never hides the screen you navigate to.
   // Compared without the share token, so following a reset link keeps the panel open.
   const subPath = location.pathname.slice(`/t/${shareToken ?? ''}`.length)
@@ -253,10 +251,16 @@ function TripContent({
         </div>
       </AppShell>
     )
+  const target = backTarget(location.pathname, trip.name, panel)
+  const back =
+    'to' in target
+      ? { to: target.to, label: target.label }
+      : { label: target.label, onClick: () => setPanel(target.panel) }
   return (
     <AppShell
       title={trip.name}
-      back={HOME}
+      back={back}
+      titleHidden={target.titleHidden}
       tripPath={path}
       thumbBar={
         isList && (
@@ -548,7 +552,7 @@ function DeleteMember({
   )
 }
 
-/** Owner only: reset the share link or delete the trip (owner-account spec). */
+/** Owner only: reset the share link. Deleting a trip lives on 我的旅程 (owner-account spec). */
 function TripSettings({
   trip,
   copied,
@@ -560,9 +564,8 @@ function TripSettings({
   onCopy: () => void
   onDone: () => void
 }) {
-  const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [confirm, setConfirm] = useState<'reset' | 'delete' | null>(null)
+  const [confirm, setConfirm] = useState<'reset' | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
@@ -580,23 +583,6 @@ function TripSettings({
     } catch (err) {
       setError(membershipError(err))
     } finally {
-      setBusy(false)
-    }
-  }
-  async function remove() {
-    setBusy(true)
-    setError('')
-    try {
-      await deleteTrip(trip.id)
-      queryClient.removeQueries({ queryKey: tripKey(trip.id) })
-      await queryClient.invalidateQueries({ queryKey: ['my-trips'] })
-      navigate('/', { replace: true })
-    } catch (err) {
-      setError(
-        hasErrorCode(err, 'OWNER_REQUIRED')
-          ? membershipError(err)
-          : '無法刪除旅程，請確認網路連線後再試一次。',
-      )
       setBusy(false)
     }
   }
@@ -627,32 +613,12 @@ function TripSettings({
             </Button>
           </div>
         </section>
-      ) : confirm === 'delete' ? (
-        <section className="trip-stack" aria-label="確認刪除旅程">
-          <p>
-            刪除「{trip.name}
-            」會一起刪除所有支出、還款、成員與收據照片，所有人都無法再開啟，而且無法復原。
-          </p>
-          <div className="trip-actions">
-            <Button busy={busy} onClick={() => void remove()}>
-              刪除旅程
-            </Button>
-            <Button variant="secondary" disabled={busy} onClick={() => setConfirm(null)}>
-              取消
-            </Button>
-          </div>
-        </section>
       ) : (
         <>
           <div className="trip-stack">
             <p className="trip-hint">連結被轉傳給不該加入的人時，可以重設分享連結。</p>
             <Button variant="secondary" onClick={() => setConfirm('reset')}>
               重設分享連結
-            </Button>
-          </div>
-          <div className="trip-stack trip-danger">
-            <Button variant="secondary" onClick={() => setConfirm('delete')}>
-              刪除旅程
             </Button>
           </div>
         </>

@@ -51,6 +51,15 @@
   display: grid;
   gap: var(--space-3);
 }
+.my-trips__edit {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+.my-trips__confirm {
+  width: 100%;
+  padding: var(--space-2) 0;
+}
 .my-trips__account {
   display: grid;
   justify-items: center;

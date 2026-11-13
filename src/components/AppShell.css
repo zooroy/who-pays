@@ -25,20 +25,35 @@
 
 .app-shell__heading {
   display: flex;
-  align-items: center;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
   gap: var(--space-1);
   min-width: 0;
 }
 
+/* 「‹ 我的旅程」: its own row above the title, up one level (iOS style). */
 .app-shell__back {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: var(--touch-min);
-  height: var(--touch-min);
-  margin-left: calc(var(--space-3) * -1);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--touch-min);
+  max-width: 100%;
+  margin: calc(var(--space-3) * -1) 0 calc(var(--space-2) * -1) calc(var(--space-2) * -1);
+  padding: 0 var(--space-2);
+  border: 0;
   border-radius: var(--radius-control);
+  background: none;
   color: var(--color-ink);
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.app-shell__back > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .app-shell__title {

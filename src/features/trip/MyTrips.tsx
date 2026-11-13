@@ -4,17 +4,21 @@ import { useNavigate } from 'react-router'
 import { AppShell, Avatar, Button, Notice, PlusIcon, Ticket, TicketRow } from '../../components'
 import { CURRENCIES } from '../../lib/money'
 import { signOut, useAccount } from '../account/account'
+import { hasErrorCode, membershipError } from '../../lib/identity'
 import { CreateTripForm } from './CreateTrip'
-import { getMyTrips, type MyTrip } from './api'
+import { deleteTrip, getMyTrips, tripKey, type MyTrip } from './api'
 
 /**
- * 我的旅程 (owner-account design §9): the owner sees every trip and can create one;
- * friends see the trips they joined and 擁有者登入.
+ * 我的旅程 (owner-account design §9): the owner sees every trip, can create one and,
+ * in 編輯 mode, delete one; friends see the trips they joined and 擁有者登入.
  */
 export function MyTrips() {
   const navigate = useNavigate()
   const account = useAccount()
   const trips = useQuery({ queryKey: ['my-trips'], queryFn: getMyTrips })
+  const [editing, setEditing] = useState(false)
+  /** The one trip whose ticket shows the delete confirmation. */
+  const [confirmId, setConfirmId] = useState<string | null>(null)
   if (account.isPending || trips.isPending)
     return (
       <AppShell title="我的旅程">
@@ -60,13 +64,38 @@ export function MyTrips() {
         </div>
       </AppShell>
     )
+  const editMode = isOwner && editing
   return (
-    <AppShell title="我的旅程">
+    <AppShell
+      title="我的旅程"
+      headerExtra={
+        isOwner && (
+          <Button
+            variant="quiet"
+            onClick={() => {
+              setEditing(!editing)
+              setConfirmId(null)
+            }}
+          >
+            {editing ? '完成' : '編輯'}
+          </Button>
+        )
+      }
+    >
       <div className="trip-stack">
         <ul className="my-trips">
           {trips.data.map((trip) => (
             <li key={trip.id}>
-              <TripTicket trip={trip} onOpen={() => navigate(`/t/${trip.share_token}`)} />
+              {editMode ? (
+                <EditableTrip
+                  trip={trip}
+                  confirming={confirmId === trip.id}
+                  onAsk={() => setConfirmId(trip.id)}
+                  onCancel={() => setConfirmId(null)}
+                />
+              ) : (
+                <TripTicket trip={trip} onOpen={() => navigate(`/t/${trip.share_token}`)} />
+              )}
             </li>
           ))}
         </ul>
@@ -117,16 +146,86 @@ function AccountAction({ signedIn }: { signedIn: boolean }) {
   )
 }
 
-function TripTicket({ trip, onOpen }: { trip: MyTrip; onOpen: () => void }) {
+function TripRow({ trip }: { trip: MyTrip }) {
   const me = trip.members.find((m) => m.id === trip.my_member_id)
   return (
+    <TicketRow
+      leading={me ? <Avatar avatarId={me.avatar_id} decorative /> : undefined}
+      title={trip.name}
+      meta={`${trip.members.length} 位成員`}
+      amount={CURRENCIES[trip.default_currency].label}
+    />
+  )
+}
+
+function TripTicket({ trip, onOpen }: { trip: MyTrip; onOpen: () => void }) {
+  return (
     <Ticket onClick={onOpen} label={`開啟${trip.name}`}>
-      <TicketRow
-        leading={me ? <Avatar avatarId={me.avatar_id} decorative /> : undefined}
-        title={trip.name}
-        meta={`${trip.members.length} 位成員`}
-        amount={CURRENCIES[trip.default_currency].label}
-      />
+      <TripRow trip={trip} />
+    </Ticket>
+  )
+}
+
+/**
+ * A trip in 編輯 mode (ios-back-and-trip-delete design §4): not a link, with 刪除 on
+ * the stub; deleting takes a second tap on a button that names the trip.
+ */
+function EditableTrip({
+  trip,
+  confirming,
+  onAsk,
+  onCancel,
+}: {
+  trip: MyTrip
+  confirming: boolean
+  onAsk: () => void
+  onCancel: () => void
+}) {
+  const queryClient = useQueryClient()
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  async function remove() {
+    setBusy(true)
+    setError('')
+    try {
+      await deleteTrip(trip.id)
+      queryClient.removeQueries({ queryKey: tripKey(trip.id) })
+      await queryClient.invalidateQueries({ queryKey: ['my-trips'] })
+    } catch (err) {
+      setError(
+        hasErrorCode(err, 'OWNER_REQUIRED')
+          ? membershipError(err)
+          : '無法刪除旅程，請確認網路連線後再試一次。',
+      )
+      setBusy(false)
+    }
+  }
+  return (
+    <Ticket
+      stub={
+        confirming ? (
+          <section className="trip-stack my-trips__confirm" aria-label={`確認刪除${trip.name}`}>
+            {error && <Notice tone="problem">{error}</Notice>}
+            <p>會一起刪除{trip.name}的所有支出、還款、成員與收據照片，無法復原。</p>
+            <div className="trip-actions">
+              <Button busy={busy} onClick={() => void remove()}>
+                刪除{trip.name}
+              </Button>
+              <Button variant="secondary" disabled={busy} onClick={onCancel}>
+                取消
+              </Button>
+            </div>
+          </section>
+        ) : (
+          <div className="my-trips__edit">
+            <Button variant="quiet" onClick={onAsk}>
+              刪除<span className="visually-hidden">{trip.name}</span>
+            </Button>
+          </div>
+        )
+      }
+    >
+      <TripRow trip={trip} />
     </Ticket>
   )
 }

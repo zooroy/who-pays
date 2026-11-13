@@ -32,7 +32,7 @@ export function LoginPage() {
     }
   }
   return (
-    <AppShell title="擁有者登入" back={{ to: '/', label: '回到我的旅程' }}>
+    <AppShell title="擁有者登入" back={{ to: '/', label: '我的旅程' }}>
       <form className="trip-stack" onSubmit={submit} noValidate>
         <p className="trip-hint">只有擁有者需要登入。朋友打開旅程連結就能使用，不用登入。</p>
         <TextField

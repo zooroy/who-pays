@@ -1,4 +1,4 @@
-import { useId, useState, type FormEvent } from 'react'
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { Avatar, Button, Notice, SelectField, TextField } from '../../components'
@@ -75,6 +75,32 @@ export function ExpenseForm({
   const navigate = useNavigate()
   const client = useQueryClient()
   const path = `/t/${trip.share_token}`
+  // A new expense with a photo attached: leaving any other way than saving or 取消
+  // (the top-left back, the iOS back swipe) counts as 取消, so the photo is deleted
+  // (ios-back-and-trip-delete design §3).
+  const settled = useRef(false)
+  const cancelRef = useRef(onCancel)
+  useEffect(() => {
+    cancelRef.current = onCancel
+  })
+  const dropsPhotoOnLeave = Boolean(receipt) && !expense
+  // A ref, not a local: StrictMode's dev-only remount runs the effect again, and
+  // the check below must see that second mount.
+  const mounted = useRef(false)
+  useEffect(() => {
+    if (!dropsPhotoOnLeave) return
+    mounted.current = true
+    return () => {
+      mounted.current = false
+      // A tick later, so StrictMode's dev-only unmount/remount does not count.
+      window.setTimeout(() => {
+        if (!mounted.current && !settled.current) {
+          settled.current = true
+          cancelRef.current?.()
+        }
+      })
+    }
+  }, [dropsPhotoOnLeave])
   async function submit(event: FormEvent) {
     event.preventDefault()
     if (busy) return
@@ -97,11 +123,14 @@ export function ExpenseForm({
       receipt_raw: scanned,
     }
     setBusy(true)
+    // Saving: from here the photo belongs to the expense, even if the user leaves now.
+    settled.current = true
     try {
       await saveExpense(expensePayload(trip.id, me.id, draft, expense, attached))
       await client.invalidateQueries({ queryKey: tripKey(trip.id) })
       navigate(path)
     } catch (failure) {
+      settled.current = false
       const mapped = expenseError(failure)
       setErrors(mapped.fields)
       setError(mapped.message ?? '')
@@ -291,6 +320,7 @@ export function ExpenseForm({
         variant="quiet"
         disabled={busy}
         onClick={() => {
+          settled.current = true
           onCancel?.()
           navigate(path)
         }}
