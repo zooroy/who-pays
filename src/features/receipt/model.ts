@@ -153,3 +153,19 @@ export function parseItemAmount(input: string, currency: CurrencyCode): number |
   const value = parseMoneyInput(negative ? trimmed.slice(1) : trimmed, currency)
   return value === null ? null : negative ? -value : value
 }
+
+/** After this long, the wait screen says the scan is slower than usual (receipt-scan-focus). */
+export const SLOW_SCAN_MS = 15_000
+
+/** What the wait screen says while the photo uploads or the receipt is being read. */
+export function scanWaitText(
+  step: 'upload' | 'parse',
+  elapsedMs: number,
+): { label: string; hint: string | null } {
+  if (step === 'upload') return { label: '正在上傳照片…', hint: null }
+  return {
+    label: '辨識中…',
+    hint:
+      elapsedMs >= SLOW_SCAN_MS ? '比平常久一點，可以繼續等，或改成手動新增' : '通常要 10 到 30 秒',
+  }
+}

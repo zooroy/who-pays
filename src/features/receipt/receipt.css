@@ -1,13 +1,102 @@
-.receipt-working__body {
+/* Full-screen wait while uploading and reading (receipt-scan-focus design §1–3). */
+.receipt-wait {
+  position: fixed;
+  inset: 0;
+  z-index: 20; /* above .app-shell__bottom (10) */
+  overflow-y: auto;
+  background: var(--color-ticket-green);
+}
+
+.receipt-wait__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  max-width: var(--content-max);
+  min-height: 100%;
+  margin: 0 auto;
+  /* Keep the tab bar's strip empty, so the button sits where 拍收據 was, not on a tab. */
+  padding: var(--space-5) var(--space-4) calc(var(--tab-bar-height) + env(safe-area-inset-bottom));
+}
+
+.receipt-wait__title {
+  font-size: var(--font-size-title);
+  line-height: var(--line-height-tight);
+}
+
+.receipt-wait__ticket {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.receipt-wait__body {
   display: grid;
   justify-items: center;
   gap: var(--space-4);
-  padding: var(--space-5) var(--space-4);
+  padding: var(--space-3) 0;
 }
 
-.receipt-working__photo {
+/* The punch-grey tear line sweeps down the photo, like reading it line by line. */
+.receipt-wait__scan {
+  position: relative;
+  overflow: hidden;
+}
+
+.receipt-wait__scan::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: repeating-linear-gradient(90deg, var(--color-punch) 0 6px, transparent 6px 12px);
+  animation: receipt-wait-sweep 2.4s linear infinite;
+}
+
+/* top is a percentage of the photo's height, so the line ends at its bottom edge. */
+@keyframes receipt-wait-sweep {
+  from {
+    top: 0;
+  }
+  to {
+    top: calc(100% - 2px);
+  }
+}
+
+.receipt-wait__photo {
   display: block;
   max-width: 100%;
-  max-height: 50vh;
+  /* Leave room for the title, the status text and the button on short screens. */
+  max-height: calc(100dvh - 22rem);
+  min-height: 6rem;
   height: auto;
+  object-fit: contain;
+}
+
+.receipt-wait__status {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  text-align: center;
+}
+
+.receipt-wait__label {
+  font-size: var(--font-size-large);
+}
+
+.receipt-wait__hint {
+  color: var(--color-ink-soft);
+}
+
+.receipt-wait__actions {
+  display: grid;
+  align-content: center;
+  min-height: var(--thumb-bar-height);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .receipt-wait__scan::after {
+    animation: none;
+  }
 }
