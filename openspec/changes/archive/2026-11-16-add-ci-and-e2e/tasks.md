@@ -28,7 +28,7 @@
 ## 4. GitHub Actions CI
 
 - [x] 4.1 新增 `.github/workflows/ci.yml`，`check` 與 `supabase` 兩個 job，失敗時上傳 Playwright 報告（design 第 1 節）。驗證：本機用 `actionlint`（或 `npx yaml-lint`）檢查格式沒有錯誤
-- [ ] 4.2 確認 CI 會擋下錯誤。驗證：在暫時分支上故意讓一個 Vitest 與一個 E2E 測試失敗並 push，兩個 job 分別失敗、報告可下載；刪除該分支
+- [x] 4.2 確認 CI 會擋下錯誤。驗證：在暫時分支上故意讓一個 Vitest 與一個 E2E 測試失敗並 push，兩個 job 分別失敗、報告可下載；刪除該分支
 
 ## 5. 文件
 
@@ -36,7 +36,7 @@
 
 ## 6. 整體驗證
 
-- [ ] 6.1 本機執行 `npm run lint`、`npm run build`、`npm test`、`supabase test db`、`npm run test:e2e` 全部通過；push 到 `main` 後 GitHub Actions 兩個 job 都成功
+- [x] 6.1 本機執行 `npm run lint`、`npm run build`、`npm test`、`supabase test db`、`npm run test:e2e` 全部通過；push 到 `main` 後 GitHub Actions 兩個 job 都成功
 
 ## Workflow follow-up
 
