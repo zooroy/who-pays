@@ -54,3 +54,7 @@ describe('splitEvenly', () => {
     expect(() => splitEvenly(-1, ['a'])).toThrow()
   })
 })
+
+it('CI 失敗檢查：故意失敗', () => {
+  expect(1).toBe(2)
+})

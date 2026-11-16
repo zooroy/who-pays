@@ -36,4 +36,9 @@ test.describe('settlement', () => {
     await expect(friendPage.getByRole('button', { name: /^標記已付：/ })).toHaveCount(0)
     await expect(friendPage.getByRole('heading', { name: '全部結清' })).toBeVisible()
   })
+
+  test('CI 失敗檢查 › 故意失敗', async ({ page }) => {
+    await page.goto('/')
+    await expect(page.getByText('不存在的文字')).toBeVisible({ timeout: 1000 })
+  })
 })
