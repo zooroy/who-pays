@@ -21,14 +21,15 @@
 | 後端 | Supabase：Postgres、Row Level Security、RPC、Realtime、Storage、Edge Functions |
 | AI | Gemini（structured output），只在 Edge Function 內呼叫，API 金鑰不會進到瀏覽器 |
 | 部署 | Cloudflare Workers 靜態託管、Supabase（東京） |
-| 測試 | Vitest（純邏輯）、pgTAP（資料庫權限與 RPC） |
+| 測試 | Vitest（純邏輯）、pgTAP（資料庫權限與 RPC）、Playwright（主要流程 E2E） |
+| CI | GitHub Actions：push 與 PR 時執行 lint、型別檢查、上述三種測試 |
 
 ## 設計重點
 
 - **權限在資料庫層**：匿名登入加上 RLS，每個人只讀寫得到自己加入的旅程；旅程、成員與支出的寫入都經過 `security definer` 的 RPC，在同一個 transaction 裡驗證並寫入。
 - **金額用整數**：以最小貨幣單位儲存（TWD 元、JPY 円），分攤的餘數分配有固定規則，避免浮點誤差。
 - **結算是純函式**：`src/lib/settle.ts` 不存任何狀態，每次都從支出與還款重新計算，並有完整測試。
-- **規格驅動開發**：需求寫在 [`openspec/`](openspec/)，每個 Scenario 都可以驗證。每次修改都先開 change（proposal、spec、design、tasks），實作驗證後再 archive 並合併進主規格。開發流程由 Claude Code 與 Codex 協作，分工寫在 [`AGENTS.md`](AGENTS.md)。
+- **規格驅動開發**：需求寫在 [`openspec/`](openspec/)，每個 Scenario 都可以驗證，主要流程的 Scenario 有同名的 E2E 測試。每次修改都先開 change（proposal、spec、design、tasks），實作驗證後再 archive 並合併進主規格。開發流程由 Claude Code 與 Codex 協作，分工寫在 [`AGENTS.md`](AGENTS.md)。
 
 ## 專案結構
 
@@ -37,6 +38,7 @@ src/features/    依功能分：trip、expense、receipt、settlement、account
 src/lib/         金額、結算等純邏輯與測試
 src/components/  共用元件；樣式 tokens 在 src/styles/
 supabase/        migrations、pgTAP 測試、Edge Function（parse-receipt）
+e2e/             Playwright E2E，測試標題對應規格的 Scenario
 openspec/        規格（specs/）與變更紀錄（changes/archive/）
 ```
 

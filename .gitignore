@@ -39,3 +39,7 @@ test-receipts/
 .wrangler
 .dev.vars*
 !.dev.vars.example
+
+# Playwright
+playwright-report/
+test-results/

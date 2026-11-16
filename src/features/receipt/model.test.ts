@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { SLOW_SCAN_MS, scanFailureMessage, scanWaitText } from './model'
+import e2eReceipt from '../../../e2e/fixtures/receipt-result.json'
+import { isReceiptResult, SLOW_SCAN_MS, scanFailureMessage, scanWaitText } from './model'
 
 describe('scanFailureMessage', () => {
   it('tells the user the model is busy and to try again later', () => {
@@ -28,5 +29,11 @@ describe('scanWaitText', () => {
       label: '辨識中…',
       hint: '比平常久一點，可以繼續等，或改成手動新增',
     })
+  })
+})
+
+describe('isReceiptResult', () => {
+  it('accepts the fixed result the E2E tests return for parse-receipt', () => {
+    expect(isReceiptResult(e2eReceipt)).toBe(true)
   })
 })

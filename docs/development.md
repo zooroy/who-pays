@@ -84,7 +84,7 @@ supabase test db      # 啟動 Supabase 並完成 db reset 後執行 pgTAP
 
 SQL 測試在 transaction 內建立測試使用者，以 `authenticated` 角色及 JWT claims 呼叫 RPC 與查詢，最後 rollback。
 
-`scripts/` 底下的檢查腳本會實際連線（本機或正式環境），以擁有者帳號建立旅程（需要 env 檔中的 `OWNER_EMAIL`、`OWNER_PASSWORD`），並建立少量匿名使用者（匿名登入每 IP 每小時上限 30 次）：
+`scripts/` 底下的檢查腳本會實際連線（本機或正式環境），以擁有者帳號建立旅程（需要 env 檔中的 `OWNER_EMAIL`、`OWNER_PASSWORD`），並建立少量匿名使用者（正式環境的匿名登入每 IP 每小時上限 30 次）：
 
 ```sh
 node --env-file=.env.local scripts/realtime-check.ts          # 即時同步只送給同旅程成員
@@ -94,6 +94,37 @@ node --env-file=.env.local scripts/receipt-function-check.ts  # parse-receipt �
 ```
 
 把 `.env.local` 換成 `.env.production.local` 即可檢查正式環境。
+
+### E2E（Playwright）
+
+以手機尺寸的 Chromium 走主要流程，連到本機 Supabase：
+
+```sh
+supabase start
+npx playwright install chromium   # 第一次執行前安裝瀏覽器
+npm run test:e2e                  # 全部
+npm run test:e2e -- settlement    # 只跑一個檔案
+npx playwright test --ui          # 互動模式，可以看每一步的畫面
+```
+
+- **不需要 `.env.local`**：`e2e/localSupabase.ts` 會從 `supabase status` 取得網址與金鑰，網址不是本機時直接中止，不可能連到正式環境。Playwright 會在 5174 埠自己啟動 dev server，不影響平常開發用的 5173。
+- **擁有者帳號**：每次執行前自動建立或沿用 `e2e-owner@example.test`（只存在本機 Supabase），不需要先跑 `scripts/create-local-owner.ts`。
+- **收據辨識不呼叫 Gemini**：測試攔截 `parse-receipt` 的請求，回傳 `e2e/fixtures/receipt-result.json` 或 503 `MODEL_BUSY`。照片仍會上傳到本機 Storage。
+- **測試資料**：每個測試建立自己的旅程（名稱以「E2E」開頭並加上隨機後綴），可以平行執行；執行後不會刪除，需要時用 `supabase db reset` 清掉。
+- **匿名登入上限**：每個朋友的瀏覽器都會匿名登入一次，所以 `supabase/config.toml` 把本機上限調成每小時 1000 次。正式環境的設定在 Supabase Dashboard，**不要用 `supabase config push`**，否則會把本機設定推到正式環境。
+
+**命名規則**：檔案依主規格分成 `e2e/<capability>.spec.ts`，`test.describe` 用 capability 名稱，每個測試的標題是「<Requirement> › <Scenario>」，和 `openspec/specs/` 裡的標題完全一致，例如 `test('標記已付 › 標記已付', …)`。用 Scenario 名稱搜尋 `e2e/` 就能找到對應的測試。選取元素時用 `getByRole` 與畫面上的文字，不加 `data-testid`。
+
+### CI（GitHub Actions）
+
+`.github/workflows/ci.yml` 在 push 到 `main` 與開 Pull Request 時執行兩個平行的 job：
+
+| Job | 內容 |
+|---|---|
+| Lint、型別檢查、Vitest | `npm run lint`、`npm run build`、`npm test` |
+| pgTAP、Playwright E2E | `supabase start`（排除用不到的服務）、`supabase test db`、`npm run test:e2e` |
+
+E2E 失敗時，GitHub Actions 的執行頁面最下方會有 `playwright-report` 可以下載，解壓縮後執行 `npx playwright show-report playwright-report`，可以看到每一步的畫面與 trace。CI 不會部署，部署仍依下面「部署」的步驟手動執行。
 
 ## RPC 契約
 

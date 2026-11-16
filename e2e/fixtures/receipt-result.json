@@ -1,0 +1,19 @@
+{
+  "store_name": "一蘭 新宿店",
+  "date": "2026-11-03",
+  "time": "12:30",
+  "currency": "JPY",
+  "items": [
+    { "name": "ラーメン", "name_zh": "拉麵", "qty": 1, "unit_price": 980, "amount": 980 },
+    { "name": "替玉", "name_zh": "加麵", "qty": 1, "unit_price": 210, "amount": 210 }
+  ],
+  "subtotal": 1190,
+  "tax": null,
+  "service_charge": null,
+  "discount": null,
+  "total": 1190,
+  "invoice_number": null,
+  "confidence": "high",
+  "is_receipt": true,
+  "notes": null
+}
