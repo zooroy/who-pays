@@ -22,8 +22,8 @@
 ## 5. 整合驗證
 
 - [x] 5.1 本機依序執行 `npm run lint`、`npm run format:check`、`npm run build`、`npm test`、`npm audit --audit-level=high`，全部通過
-- [ ] 5.2 經使用者同意 commit 並 push 到 `main` 後，用 `gh run list` 確認 CI（三個 job）與 CodeQL 都成功，GitHub 的 Security 分頁出現 CodeQL 的掃描結果，且 Insights → Dependency graph → Dependabot 頁面沒有設定錯誤
-- [ ] 5.3 經使用者同意後，開啟 Dependabot alerts 與 security updates（GitHub 設定頁面，或 `gh api -X PUT repos/zooroy/who-pays/vulnerability-alerts` 與 `.../automated-security-fixes`），用 `gh api repos/zooroy/who-pays/automated-security-fixes` 確認已開啟
+- [x] 5.2 經使用者同意 commit 並 push 到 `main` 後，用 `gh run list` 確認 CI（三個 job）與 CodeQL 都成功，GitHub 的 Security 分頁出現 CodeQL 的掃描結果，且 Insights → Dependency graph → Dependabot 頁面沒有設定錯誤
+- [x] 5.3 經使用者同意後，開啟 Dependabot alerts 與 security updates（GitHub 設定頁面，或 `gh api -X PUT repos/zooroy/who-pays/vulnerability-alerts` 與 `.../automated-security-fixes`），用 `gh api repos/zooroy/who-pays/automated-security-fixes` 確認已開啟
 
 ## Workflow follow-up
 
