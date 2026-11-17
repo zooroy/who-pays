@@ -25,6 +25,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
+      - run: npm run format:check
       - run: npm run build
       - run: npm test
 
@@ -60,3 +61,15 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 7
+
+  security:
+    name: 相依套件安全檢查
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      # Reads package-lock.json only; fails on high or critical advisories.
+      - run: npm audit --audit-level=high

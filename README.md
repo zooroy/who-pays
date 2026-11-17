@@ -22,7 +22,7 @@
 | AI | Gemini（structured output），只在 Edge Function 內呼叫，API 金鑰不會進到瀏覽器 |
 | 部署 | Cloudflare Workers 靜態託管、Supabase（東京） |
 | 測試 | Vitest（純邏輯）、pgTAP（資料庫權限與 RPC）、Playwright（主要流程 E2E） |
-| CI | GitHub Actions：push 與 PR 時執行 lint、型別檢查、上述三種測試 |
+| CI | GitHub Actions：push 與 PR 時執行 lint、格式與型別檢查、上述三種測試、`npm audit`；CodeQL 程式碼掃描與 Dependabot 套件更新 |
 
 ## 設計重點
 

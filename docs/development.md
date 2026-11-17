@@ -117,14 +117,23 @@ npx playwright test --ui          # 互動模式，可以看每一步的畫面
 
 ### CI（GitHub Actions）
 
-`.github/workflows/ci.yml` 在 push 到 `main` 與開 Pull Request 時執行兩個平行的 job：
+`.github/workflows/ci.yml` 在 push 到 `main` 與開 Pull Request 時執行三個平行的 job：
 
 | Job | 內容 |
 |---|---|
-| Lint、型別檢查、Vitest | `npm run lint`、`npm run build`、`npm test` |
+| Lint、型別檢查、Vitest | `npm run lint`、`npm run format:check`、`npm run build`、`npm test` |
 | pgTAP、Playwright E2E | `supabase start`（排除用不到的服務）、`supabase test db`、`npm run test:e2e` |
+| 相依套件安全檢查 | `npm audit --audit-level=high` |
 
 E2E 失敗時，GitHub Actions 的執行頁面最下方會有 `playwright-report` 可以下載，解壓縮後執行 `npx playwright show-report playwright-report`，可以看到每一步的畫面與 trace。CI 不會部署，部署仍依下面「部署」的步驟手動執行。
+
+**格式檢查失敗**：在本機執行 `npm run format` 修正後再 commit。
+
+**相依套件安全檢查失敗**：代表有 high 或 critical 等級的漏洞。即使 PR 沒有改到套件也可能失敗，因為漏洞公告是新出現的。在本機執行 `npm audit` 看是哪個套件，再升級它（`npm update <套件>`，或等 Dependabot 開的 PR）。moderate 以下不會讓 CI 失敗。目前有 4 個 moderate，來自 `vite-plugin-pwa` 的建置相依套件，修正需要降版，暫不處理。
+
+**CodeQL**：`.github/workflows/codeql.yml` 在 push 到 `main`、開 Pull Request 時，以及每週一掃描 TypeScript 與 workflow 檔。結果在 GitHub 的 **Security → Code scanning**；誤報可以在那裡標記為 dismiss。不要在 repo 設定中再開 CodeQL 的 default setup，兩者不能同時使用。
+
+**Dependabot**：`.github/dependabot.yml` 每週檢查 npm 套件與 GitHub Actions 的新版本並開 PR。minor／patch 合併成一個 PR，major 各自一個 PR。這些 PR 會跑完整 CI，通過後由人工審查合併；major 更新要先看套件的變更說明。有漏洞的套件另外由 repo 設定中的 Dependabot alerts 與 security updates 通知並開 PR。
 
 ## RPC 契約
 
