@@ -19,7 +19,15 @@
 - **TanStack Query**：快取旅程資料；Realtime 收到變更時只讓該旅程的查詢重新整理
 - **Gemini（structured output）**：直接回傳固定格式的 JSON，只在 Edge Function 內呼叫，API 金鑰不會進到瀏覽器
 - **vite-plugin-pwa**：提供加到主畫面，並偵測新版本、挑安全的時機套用
-- **OpenSpec + Vitest／pgTAP／Playwright**：需求寫成可驗證的 Scenario，測試標註對應的 Scenario，CI 產生對照報告（目前 68 / 115 個有自動測試）
+- **OpenSpec**：需求與每次變更都寫成可驗證的 Scenario（proposal → spec → design → tasks），作為驗收標準
+
+## Verification
+- **Static**：TypeScript strict、oxlint、Prettier（本機與 CI）
+- **Test**：Vitest（純邏輯 83 個）、pgTAP（資料庫權限與 RPC）、Playwright（主要流程 E2E 17 個，手機尺寸 Chromium）
+- **Security**：npm audit、CodeQL、Dependabot（CI）
+- **Acceptance Evidence**：E2E 標題與 Vitest／pgTAP 標註對應規格的 Scenario，CI 產生對照報告並上傳 artifact（目前 68 / 115 個 Scenario 有自動測試）
+- **Spec Validation**：每次變更 archive 前執行 `openspec validate --strict`
+- **Independent Code Review**：[`AGENTS.md`](AGENTS.md) 定義 Claude Code（Lead）審查、Codex（Engineer）實作的分工
 
 ## Getting Started
 ```bash
