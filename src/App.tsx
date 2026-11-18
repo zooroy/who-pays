@@ -5,7 +5,6 @@ import { AppShell, Button, Notice } from './components'
 import { startAppUpdates, tryApplyUpdate } from './lib/appUpdate'
 import { ensureSession } from './lib/supabase'
 import { LoginPage } from './features/account/LoginPage'
-import { migrateLocalIdentities } from './features/trip/api'
 import { CreateTrip } from './features/trip/CreateTrip'
 import { MyTrips } from './features/trip/MyTrips'
 import { TripPage } from './features/trip/TripPage'
@@ -32,8 +31,6 @@ function AuthenticatedApp() {
     queryKey: ['session'],
     queryFn: async () => {
       await ensureSession()
-      // Older versions kept identities in localStorage; move them once (design §3).
-      await migrateLocalIdentities().catch(() => undefined)
       return true
     },
     staleTime: Infinity,

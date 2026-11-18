@@ -1,37 +1,7 @@
-// Who you are in each trip now lives in trip_access.member_id (owner-account design §3).
-// Older versions kept it in localStorage; these helpers find those entries so they
-// can be moved to the database once and then removed.
-const PREFIX = 'whopays:trip:'
-const SUFFIX = ':member'
-
-export interface LocalIdentity {
-  key: string
-  tripId: string
-  memberId: string
-}
+// Who you are in each trip lives in trip_access.member_id (owner-account design §3).
 export interface RemoteIdentity {
   trip_id: string
   member_id: string | null
-}
-
-/** Returns the trip id of an old localStorage identity key, or null for any other key. */
-export function parseIdentityKey(key: string): string | null {
-  if (!key.startsWith(PREFIX) || !key.endsWith(SUFFIX)) return null
-  const tripId = key.slice(PREFIX.length, -SUFFIX.length)
-  return tripId && !tripId.includes(':') ? tripId : null
-}
-
-export function readLocalIdentities(
-  storage: Pick<Storage, 'length' | 'key' | 'getItem'>,
-): LocalIdentity[] {
-  const found: LocalIdentity[] = []
-  for (let i = 0; i < storage.length; i++) {
-    const key = storage.key(i)
-    const tripId = key && parseIdentityKey(key)
-    const memberId = key && storage.getItem(key)
-    if (key && tripId && memberId) found.push({ key, tripId, memberId })
-  }
-  return found
 }
 
 /** Identities the database does not know yet; an identity already stored always wins. */

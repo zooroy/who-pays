@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { ensureSession, supabase } from '../../lib/supabase'
 import { pendingMigrations } from '../../lib/identity'
-import { getMyAccess, isOwner, migrateLocalIdentities, setMyMember } from '../trip/api'
+import { getMyAccess, isOwner, setMyMember } from '../trip/api'
 
 export interface Account {
   /** Signed in with email and password (not an anonymous friend). */
@@ -23,7 +23,7 @@ export function useAccount() {
 /**
  * Signs the owner in (owner-account design §8). The identities this browser had as
  * an anonymous user are carried over to the account for trips where it has none yet,
- * so the owner keeps being "Roy" after the first sign-in.
+ * so the owner keeps being "熊" after the first sign-in.
  */
 export async function signIn(email: string, password: string): Promise<void> {
   const before = await getMyAccess().catch(() => [])
@@ -36,7 +36,6 @@ export async function signIn(email: string, password: string): Promise<void> {
     const pending = pendingMigrations(carried, await getMyAccess().catch(() => []))
     await Promise.allSettled(pending.map((p) => setMyMember(p.tripId, p.memberId)))
   }
-  await migrateLocalIdentities().catch(() => undefined)
 }
 
 /** Signs out on this device only, then starts a fresh anonymous session. */

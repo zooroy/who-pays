@@ -1,51 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import {
-  deleteMemberError,
-  hasErrorCode,
-  membershipError,
-  parseIdentityKey,
-  pendingMigrations,
-  readLocalIdentities,
-} from './identity'
+import { deleteMemberError, hasErrorCode, membershipError, pendingMigrations } from './identity'
 
-function storage(values: Record<string, string>) {
-  const keys = Object.keys(values)
-  return {
-    length: keys.length,
-    key: (i: number) => keys[i] ?? null,
-    getItem: (k: string) => values[k] ?? null,
-  }
-}
-
-describe('舊的 localStorage 身份', () => {
-  it('只辨識旅程身份的 key', () => {
-    expect(parseIdentityKey('whopays:trip:abc:member')).toBe('abc')
-    expect(parseIdentityKey('whopays:trip::member')).toBeNull()
-    expect(parseIdentityKey('whopays:trip:a:b:member')).toBeNull()
-    expect(parseIdentityKey('sb-127-auth-token')).toBeNull()
-  })
-  it('讀出所有旅程身份，略過其他資料', () => {
-    const found = readLocalIdentities(
-      storage({
-        'whopays:trip:t1:member': 'm1',
-        'sb-auth-token': '{}',
-        'whopays:trip:t2:member': 'm2',
-      }),
-    )
-    expect(found).toEqual([
-      { key: 'whopays:trip:t1:member', tripId: 't1', memberId: 'm1' },
-      { key: 'whopays:trip:t2:member', tripId: 't2', memberId: 'm2' },
-    ])
-  })
+describe('登入時沿用身份', () => {
   // @scenario 記住身份 › 第一次登入沿用身份
-  it('資料庫已有身份的旅程不搬移，沒有或為 null 的才搬', () => {
-    const local = readLocalIdentities(
-      storage({
-        'whopays:trip:t1:member': 'm1',
-        'whopays:trip:t2:member': 'm2',
-        'whopays:trip:t3:member': 'm3',
-      }),
-    )
+  it('資料庫已有身份的旅程不沿用，沒有或為 null 的才沿用', () => {
+    const local = [
+      { tripId: 't1', memberId: 'm1' },
+      { tripId: 't2', memberId: 'm2' },
+      { tripId: 't3', memberId: 'm3' },
+    ]
     const pending = pendingMigrations(local, [
       { trip_id: 't1', member_id: 'other' },
       { trip_id: 't2', member_id: null },

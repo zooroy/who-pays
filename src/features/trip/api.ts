@@ -1,7 +1,7 @@
 import { supabase } from '../../lib/supabase'
 import { isAvatarId, type AvatarId } from '../../lib/avatars'
 import { isCurrencyCode, type CurrencyCode } from '../../lib/money'
-import { pendingMigrations, readLocalIdentities, type RemoteIdentity } from '../../lib/identity'
+import type { RemoteIdentity } from '../../lib/identity'
 
 export interface Member {
   id: string
@@ -184,28 +184,6 @@ export async function getMyMember(tripId: string): Promise<string | null> {
 export async function setMyMember(tripId: string, memberId: string | null): Promise<void> {
   const { error } = await supabase.rpc('set_my_member', { trip_id: tripId, member_id: memberId })
   if (error) throw error
-}
-
-/**
- * Moves identities kept in localStorage by older versions into the database
- * (design §3). A key is removed once it is stored, or once the database rejects it
- * (for example the member was deleted); network failures keep it for next time.
- */
-export async function migrateLocalIdentities(): Promise<void> {
-  const local = readLocalIdentities(localStorage)
-  if (local.length === 0) return
-  const pending = pendingMigrations(local, await getMyAccess())
-  const pendingKeys = new Set(pending.map((p) => p.key))
-  for (const l of local) if (!pendingKeys.has(l.key)) localStorage.removeItem(l.key)
-  for (const p of pending) {
-    try {
-      await setMyMember(p.tripId, p.memberId)
-      localStorage.removeItem(p.key)
-    } catch (err) {
-      if (record(err) && typeof err.code === 'string' && err.code !== '')
-        localStorage.removeItem(p.key)
-    }
-  }
 }
 
 export async function deleteMember(memberId: string): Promise<void> {
