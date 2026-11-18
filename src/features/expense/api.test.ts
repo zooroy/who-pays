@@ -32,6 +32,7 @@ beforeEach(() => {
   vi.resetAllMocks()
 })
 describe('expense mutations', () => {
+  // @scenario 修改與刪除支出 › 刪除支出
   it('waits for photo removal before deleting the expense', async () => {
     const order: string[] = []
     mocks.remove.mockImplementation(async () => {
@@ -56,6 +57,7 @@ describe('expense mutations', () => {
     await expect(deleteExpense(expense)).resolves.toBeUndefined()
     expect(mocks.rpc).toHaveBeenCalledTimes(1)
   })
+  // @scenario 修改與刪除支出 › 刪除支出
   it('deletes manual expenses without accessing Storage and propagates RPC errors', async () => {
     const failure = new Error('offline')
     mocks.rpc.mockResolvedValue({ error: failure })

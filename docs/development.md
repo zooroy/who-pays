@@ -115,15 +115,57 @@ npx playwright test --ui          # 互動模式，可以看每一步的畫面
 
 **命名規則**：檔案依主規格分成 `e2e/<capability>.spec.ts`，`test.describe` 用 capability 名稱，每個測試的標題是「<Requirement> › <Scenario>」，和 `openspec/specs/` 裡的標題完全一致，例如 `test('標記已付 › 標記已付', …)`。用 Scenario 名稱搜尋 `e2e/` 就能找到對應的測試。選取元素時用 `getByRole` 與畫面上的文字，不加 `data-testid`。
 
+### Scenario 對照報告
+
+`scripts/scenario-report.ts` 把 `openspec/specs/` 的每個 Scenario 對應到驗證它的測試，回答「哪些驗收條件有自動測試、這次結果如何」。Scenario 以「Requirement › Scenario」識別（`›` 是 U+203A），名稱在所有規格中必須唯一。
+
+**怎麼標註**
+
+| 測試 | 寫法 | 結果的粒度 |
+|---|---|---|
+| E2E | 測試標題本身就是「Requirement › Scenario」 | 單一測試 |
+| Vitest | `it(`／`test(` 正上方加 `// @scenario Requirement › Scenario`，一個測試可以有多行 | 單一測試 |
+| pgTAP | 檔案開頭加 `-- @scenario Requirement › Scenario`，一行一個 | 整個檔案 |
+
+```ts
+// @scenario 依幣別計算淨額 › 混用幣別不抵銷
+// @scenario 個人結算摘要 › 檢視自己的狀況
+it('shows my net per currency and suggestions per currency without mixing', () => {
+```
+
+只在「這個測試失敗就代表該 Scenario 壞了」時才標註。Vitest 的標題要是同一行的字串，`it.each(...)` 不支援標註。
+
+**指令**
+
+```bash
+npm run scenarios:check   # 只檢查對應，不需要測試結果
+npm run scenarios         # 讀 reports/ 的測試結果，輸出 Markdown 報告
+```
+
+`scenarios:check` 在以下情況失敗，並列出檔案與行號：E2E 標題或 `@scenario` 指向不存在的 Scenario（會附上名稱最接近的 Scenario）、`@scenario` 後面不是測試、同一個檔案有同名測試、規格中有重複的 Scenario。**改了規格中的 Requirement 或 Scenario 名稱時，要一起改對應的測試。** 未覆蓋的 Scenario 只會列出，不會讓檢查失敗。
+
+`npm run scenarios` 讀取這些結果檔（沒有的視為未執行）：
+
+| 檔案 | 怎麼產生 |
+|---|---|
+| `reports/vitest.json` | `npm test`（Vitest 設定會自動寫入） |
+| `reports/e2e.json` | `npm run test:e2e`（Playwright 設定會自動寫入） |
+| `reports/pgtap.txt` | `supabase test db \| tee reports/pgtap.txt` |
+
+每個 Scenario 的結果：✅ 通過（有對應的測試都通過）、❌ 失敗（任一個對應的測試失敗）、⏸️ 未執行（有對應但這次沒有結果）、⬜ 未覆蓋（沒有任何測試對應）。手動驗證的 Scenario（例如 iPhone 實機行為）也會顯示為未覆蓋。
+
 ### CI（GitHub Actions）
 
-`.github/workflows/ci.yml` 在 push 到 `main` 與開 Pull Request 時執行三個平行的 job：
+`.github/workflows/ci.yml` 在 push 到 `main` 與開 Pull Request 時執行：
 
 | Job | 內容 |
 |---|---|
-| Lint、型別檢查、Vitest | `npm run lint`、`npm run format:check`、`npm run build`、`npm test` |
+| Lint、型別檢查、Vitest | `npm run lint`、`npm run format:check`、`npm run scenarios:check`、`npm run build`、`npm test` |
 | pgTAP、Playwright E2E | `supabase start`（排除用不到的服務）、`supabase test db`、`npm run test:e2e` |
+| Scenario 對照報告 | 前兩個 job 結束後（不論成敗）執行，合併它們的測試結果產生報告 |
 | 相依套件安全檢查 | `npm audit --audit-level=high` |
+
+**Scenario 對照報告**：在 GitHub Actions 該次執行頁面的 Summary 直接顯示，也可以從頁面最下方下載 `scenario-report`（`scenario-report.md`，保留 30 天）。這個 job 不會因為測試失敗或未覆蓋而失敗；對應錯誤由「Lint、型別檢查、Vitest」job 的 `scenarios:check` 擋下。
 
 E2E 失敗時，GitHub Actions 的執行頁面最下方會有 `playwright-report` 可以下載，解壓縮後執行 `npx playwright show-report playwright-report`，可以看到每一步的畫面與 trace。CI 不會部署，部署仍依下面「部署」的步驟手動執行。
 

@@ -2,6 +2,7 @@ import { describe, expect, test } from 'vitest'
 import { formatMoney, parseMoneyInput, splitEvenly } from './money'
 
 describe('formatMoney', () => {
+  // @scenario 原幣別記錄 › 混用幣別
   test('formats JPY and TWD with thousands separators', () => {
     expect(formatMoney(3240, 'JPY')).toBe('¥3,240')
     expect(formatMoney(42000, 'TWD')).toBe('NT$42,000')
@@ -19,6 +20,7 @@ describe('parseMoneyInput', () => {
     expect(parseMoneyInput(' 1200 ', 'TWD')).toBe(1200)
   })
 
+  // @scenario 新增支出 › 金額無效
   test('rejects fractions for zero-exponent currencies and garbage', () => {
     expect(parseMoneyInput('12.5', 'JPY')).toBeNull()
     expect(parseMoneyInput('abc', 'JPY')).toBeNull()
@@ -28,6 +30,7 @@ describe('parseMoneyInput', () => {
 })
 
 describe('splitEvenly', () => {
+  // @scenario 平均分攤 › 無法整除
   test('1000 between 3 people is 334 / 333 / 333', () => {
     const shares = splitEvenly(1000, ['a', 'b', 'c'])
     expect([...shares.values()]).toEqual([334, 333, 333])
@@ -38,6 +41,7 @@ describe('splitEvenly', () => {
     expect(Object.fromEntries(shares)).toEqual({ x: 3, y: 3, z: 3, w: 2 })
   })
 
+  // @scenario 平均分攤 › 無法整除
   test('shares always sum to the original amount', () => {
     for (let amount = 0; amount <= 500; amount += 7) {
       for (let n = 1; n <= 16; n++) {

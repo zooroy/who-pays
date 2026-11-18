@@ -56,6 +56,13 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['src/**/*.test.ts', 'supabase/functions/**/*.test.ts'],
+    include: [
+      'src/**/*.test.ts',
+      'supabase/functions/**/*.test.ts',
+      'scripts/scenario-report.test.ts',
+    ],
+    // reports/vitest.json feeds the Scenario report (scripts/scenario-report.ts).
+    reporters: ['default', 'json'],
+    outputFile: { json: 'reports/vitest.json' },
   },
 })

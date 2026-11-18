@@ -28,6 +28,8 @@ function paid(from: string, to: string, amount: number, currency: CurrencyCode):
 }
 
 describe('settleView', () => {
+  // @scenario 依幣別計算淨額 › 混用幣別不抵銷
+  // @scenario 個人結算摘要 › 檢視自己的狀況
   it('shows my net per currency and suggestions per currency without mixing', () => {
     const view = settleView(
       order,
@@ -46,6 +48,9 @@ describe('settleView', () => {
     expect(view.allSettled).toBe(false)
   })
 
+  // @scenario 標記已付 › 標記已付
+  // @scenario 還款紀錄管理 › 撤銷誤按的已付
+  // @scenario 全部結清 › 結清
   it('drops a suggestion once it is marked paid, and brings it back when the record is deleted', () => {
     const expenses = [expense(4200, 'JPY', 'bear', ['cat'])]
     const record = paid('cat', 'bear', 4200, 'JPY')
@@ -57,6 +62,7 @@ describe('settleView', () => {
     expect(undone.transfers[0].transfers).toEqual([{ from: 'cat', to: 'bear', amount: 4200 }])
   })
 
+  // @scenario 旅程總花費 › 混用幣別總花費
   it('totals spending per currency, excluding repayments', () => {
     const view = settleView(
       order,

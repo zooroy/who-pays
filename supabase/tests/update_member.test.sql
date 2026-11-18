@@ -1,4 +1,8 @@
 begin;
+-- Scenarios verified by this file (see docs/development.md「Scenario 對照報告」):
+-- @scenario 編輯成員 › 修正佔位成員的名字
+-- @scenario 編輯成員 › 更換自己的頭像
+-- @scenario 編輯成員 › 換成已被使用的頭像
 create extension if not exists pgtap with schema extensions;
 set search_path = public, extensions;
 select no_plan();

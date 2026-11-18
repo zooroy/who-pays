@@ -26,8 +26,18 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run format:check
+      - name: Scenario 對應檢查
+        run: npm run scenarios:check
       - run: npm run build
       - run: npm test
+      - name: Upload Vitest results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: results-vitest
+          path: reports/vitest.json
+          if-no-files-found: ignore
+          retention-days: 7
 
   supabase:
     name: pgTAP、Playwright E2E
@@ -47,7 +57,10 @@ jobs:
       - name: Start local Supabase
         run: supabase start -x studio,postgres-meta,edge-runtime,imgproxy,logflare,vector,mailpit,supavisor
       - name: pgTAP
-        run: supabase test db
+        run: |
+          set -o pipefail
+          mkdir -p reports
+          supabase test db | tee reports/pgtap.txt
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
       - name: Playwright E2E
@@ -61,6 +74,42 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 7
+      - name: Upload pgTAP and E2E results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: results-supabase
+          path: |
+            reports/pgtap.txt
+            reports/e2e.json
+          if-no-files-found: ignore
+          retention-days: 7
+
+  scenario-report:
+    name: Scenario 對照報告
+    needs: [check, supabase]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      # Missing results (a job stopped early) show up as 未執行 in the report.
+      - uses: actions/download-artifact@v8
+        continue-on-error: true
+        with:
+          pattern: results-*
+          path: reports
+          merge-multiple: true
+      - name: Build the report
+        run: node scripts/scenario-report.ts --reports reports --summary "$GITHUB_STEP_SUMMARY" --out scenario-report.md
+      - uses: actions/upload-artifact@v7
+        with:
+          name: scenario-report
+          path: scenario-report.md
+          retention-days: 30
 
   security:
     name: 相依套件安全檢查

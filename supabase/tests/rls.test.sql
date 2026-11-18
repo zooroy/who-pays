@@ -1,4 +1,6 @@
 begin;
+-- Scenarios verified by this file (see docs/development.md「Scenario 對照報告」):
+-- @scenario 還款紀錄管理 › 撤銷誤按的已付
 create extension if not exists pgtap with schema extensions;
 set search_path = public, extensions;
 select no_plan();

@@ -43,3 +43,6 @@ test-receipts/
 # Playwright
 playwright-report/
 test-results/
+
+# Test results for the Scenario report
+reports/

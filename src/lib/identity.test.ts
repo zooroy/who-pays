@@ -37,6 +37,7 @@ describe('舊的 localStorage 身份', () => {
       { key: 'whopays:trip:t2:member', tripId: 't2', memberId: 'm2' },
     ])
   })
+  // @scenario 記住身份 › 第一次登入沿用身份
   it('資料庫已有身份的旅程不搬移，沒有或為 null 的才搬', () => {
     const local = readLocalIdentities(
       storage({
@@ -61,6 +62,7 @@ describe('錯誤訊息', () => {
     expect(hasErrorCode(null, 'TRIP_NOT_FOUND')).toBe(false)
     expect(membershipError(new Error('internal details'))).not.toContain('internal details')
   })
+  // @scenario 刪除成員 › 成員有紀錄
   it('刪除成員時說明還有幾筆紀錄', () => {
     expect(deleteMemberError({ message: 'MEMBER_HAS_RECORDS', details: '3' }, '阿美')).toBe(
       '阿美還有 3 筆支出或還款紀錄，請先修改或刪除這些紀錄。',

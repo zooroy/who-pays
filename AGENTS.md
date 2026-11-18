@@ -43,6 +43,7 @@
 - 介面文字是繁體中文，句子用一般的大小寫；按鈕文字要說明會發生什麼事（例如「儲存支出」，不要寫「送出」）。
 - UI 必須使用 `src/components/` 的共用元件和 `src/styles/` 的 CSS tokens，不要自己新增顏色或字體。
 - 測試：純邏輯用 Vitest（`*.test.ts`，放在原始碼旁邊）；資料庫用 `supabase/tests/*.sql`（pgTAP，以 `supabase test db` 執行）。
+- Scenario 對應：Vitest 測試若能驗證某個 Scenario，在 `it(`／`test(` 正上方加 `// @scenario <Requirement> › <Scenario>`（可多行）；pgTAP 在檔案開頭加 `-- @scenario …`。名稱要和 `openspec/specs/` 完全一致，commit 前跑 `npm run scenarios:check`。細節見 `docs/development.md`「Scenario 對照報告」。
 - E2E：畫面流程用 Playwright，放在 `e2e/<capability>.spec.ts`；測試標題寫成「<Requirement> › <Scenario>」，與 `openspec/specs/` 的標題完全一致；選取元素用 `getByRole` 與畫面文字，不加 `data-testid`。細節見 `docs/development.md`「E2E」。
 
 ## 常用指令
@@ -56,4 +57,6 @@ supabase start       # 本機 Supabase（需要 Docker / OrbStack）
 supabase db reset    # 重新套用所有 migrations
 supabase test db     # 執行 pgTAP 測試
 npm run test:e2e     # Playwright E2E（需要先 supabase start）
+npm run scenarios:check  # 檢查測試與 Scenario 的對應
+npm run scenarios    # 產生 Scenario 對照報告（讀 reports/ 的測試結果）
 ```

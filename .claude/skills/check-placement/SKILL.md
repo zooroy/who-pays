@@ -15,6 +15,7 @@ description: 決定「誰付錢」專案的各種檢查（TypeScript、Lint、Un
 | Lint（oxlint） | commit 前跑 `npm run lint` | `check` job | 同上。本專案用 oxlint，不是 ESLint |
 | 格式（Prettier） | commit 前跑 `npm run format:check`，失敗就 `npm run format` | `check` job | 本地幾秒就能修，CI 只是防漏 |
 | Unit 測試（Vitest） | 開發中 `npx vitest`（watch）；commit 前 `npm test` | `check` job | 純邏輯，全部跑完只要幾秒 |
+| Scenario 對應 | commit 前 `npm run scenarios:check`；想看覆蓋情況跑 `npm run scenarios` | `check` job 檢查對應；`scenario-report` job 產生報告 | 只讀原始碼，幾秒；改了規格名稱或新增測試時最容易出錯 |
 | Component 測試 | 目前沒有 | 目前沒有 | 畫面行為由 E2E 驗證；要新增時用 Vitest + Testing Library，放本地與 `check` job |
 | 資料庫（pgTAP） | 改了 `supabase/migrations/` 或 RLS 時跑 `supabase test db` | `supabase` job | 需要本機 Supabase，只在動到資料庫時本地跑 |
 | Playwright E2E | 只跑改到的流程：`npx playwright test e2e/<capability>.spec.ts` | `supabase` job 跑全部 | 全部跑比較慢；本地失敗時可用 `--ui`／`--headed` 直接看畫面 |
@@ -36,6 +37,7 @@ npm run lint
 npm run build
 npm test
 npm run format:check
+npm run scenarios:check
 ```
 
 再依改動範圍追加：

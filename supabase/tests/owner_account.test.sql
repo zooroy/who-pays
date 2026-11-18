@@ -1,4 +1,18 @@
 begin;
+-- Scenarios verified by this file (see docs/development.md「Scenario 對照報告」):
+-- @scenario 只有擁有者能建立旅程 › 擁有者建立旅程
+-- @scenario 只有擁有者能建立旅程 › 朋友無法建立旅程
+-- @scenario 擁有者登入 › 非擁有者的帳號
+-- @scenario 擁有者存取全部旅程 › 換裝置看到同一份資料
+-- @scenario 擁有者存取全部旅程 › 登入前已存在的旅程
+-- @scenario 記住身份 › 擁有者換裝置
+-- @scenario 刪除成員 › 刪除加錯的成員
+-- @scenario 刪除成員 › 成員有紀錄
+-- @scenario 刪除成員 › 刪除正在使用中的身份
+-- @scenario 重設分享連結 › 重設分享連結
+-- @scenario 重設分享連結 › 用舊連結加入
+-- @scenario 重設分享連結 › 已加入的朋友不受影響
+-- @scenario 刪除旅程 › 擁有者刪除旅程
 create extension if not exists pgtap with schema extensions;
 set search_path = public, extensions;
 select no_plan();

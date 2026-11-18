@@ -1,4 +1,4 @@
-import { defineConfig } from '@playwright/test'
+import { defineConfig, type ReporterDescription } from '@playwright/test'
 import { localSupabase } from './e2e/localSupabase'
 
 const supabase = localSupabase()
@@ -11,7 +11,13 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: isCI,
   retries: isCI ? 1 : 0,
-  reporter: isCI ? [['github'], ['html', { open: 'never' }]] : [['list']],
+  reporter: [
+    ...(isCI
+      ? ([['github'], ['html', { open: 'never' }]] satisfies ReporterDescription[])
+      : ([['list']] satisfies ReporterDescription[])),
+    // reports/e2e.json feeds the Scenario report (scripts/scenario-report.ts).
+    ['json', { outputFile: 'reports/e2e.json' }],
+  ],
   expect: { timeout: 10_000 },
   use: {
     baseURL: `http://127.0.0.1:${PORT}`,

@@ -1,4 +1,16 @@
 begin;
+-- Scenarios verified by this file (see docs/development.md「Scenario 對照報告」):
+-- @scenario 建立旅程 › 成功建立旅程
+-- @scenario 建立旅程 › 名稱為空
+-- @scenario 佔位成員 › 替朋友建立佔位成員
+-- @scenario 頭像唯一 › 同時選擇同一頭像
+-- @scenario 新增支出 › 手動新增支出
+-- @scenario 新增支出 › 金額無效
+-- @scenario 平均分攤 › 沒有分攤者
+-- @scenario 修改與刪除支出 › 修改他人的支出
+-- @scenario 修改與刪除支出 › 刪除支出
+-- @scenario 透過連結加入 › 新成員加入
+-- @scenario 分享連結 › 無效連結
 create extension if not exists pgtap with schema extensions;
 set search_path = public, extensions;
 select no_plan();

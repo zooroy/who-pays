@@ -28,6 +28,8 @@ describe('parseRequest', () => {
 })
 
 describe('upstreamError', () => {
+  // @scenario 辨識失敗退回手動輸入 › 額度用盡
+  // @scenario 辨識失敗退回手動輸入 › 辨識服務太忙
   it('maps 429 and 402 to QUOTA_EXCEEDED, 503 to MODEL_BUSY, everything else to UPSTREAM_ERROR', () => {
     expect(upstreamError(429)).toBe('QUOTA_EXCEEDED')
     expect(upstreamError(402)).toBe('QUOTA_EXCEEDED')
@@ -38,9 +40,11 @@ describe('upstreamError', () => {
 })
 
 describe('timeoutError', () => {
+  // @scenario 辨識失敗退回手動輸入 › 忙碌後重試逾時
   it('reports a busy model when the attempt before the timeout got a 503', () => {
     expect(timeoutError(503)).toBe('MODEL_BUSY')
   })
+  // @scenario 辨識失敗退回手動輸入 › 單純逾時
   it('reports a plain timeout otherwise', () => {
     expect(timeoutError(500)).toBe('TIMEOUT')
     expect(timeoutError(null)).toBe('TIMEOUT')

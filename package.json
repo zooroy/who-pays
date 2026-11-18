@@ -12,7 +12,9 @@
     "format": "prettier --write src scripts e2e playwright.config.ts",
     "format:check": "prettier --check src scripts e2e playwright.config.ts",
     "deploy": "npm run build && wrangler deploy",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "scenarios": "node scripts/scenario-report.ts",
+    "scenarios:check": "node scripts/scenario-report.ts --check"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.119.0",

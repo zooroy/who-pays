@@ -34,6 +34,7 @@ const existing: Expense = {
   ],
 }
 describe('expense form', () => {
+  // @scenario 新增時的預設值 › 開啟新增畫面
   it('defaults to the current member, all members, trip currency and local date', () => {
     const now = new Date(2026, 0, 2, 0, 15)
     expect(localDate(now)).toBe('2026-01-02')
@@ -60,6 +61,7 @@ describe('expense form', () => {
       expect(validateDraft(draft, members).amount).toBeTruthy()
     },
   )
+  // @scenario 平均分攤 › 沒有分攤者
   it('validates required fields and real dates without submitting', () => {
     const draft = {
       ...initialDraft(trip, members, 'a'),
@@ -98,6 +100,7 @@ describe('expense form', () => {
     })
     expect(payload).not.toHaveProperty('id')
   })
+  // @scenario 修改與刪除支出 › 修改他人的支出
   it('preserves receipt and all item values when editing another member’s expense', () => {
     const draft = { ...initialDraft(trip, members, 'a', existing), amount: '4000' }
     const payload = expensePayload(trip.id, 'a', draft, existing)
@@ -119,6 +122,7 @@ describe('expense form', () => {
   })
 })
 describe('expense list', () => {
+  // @scenario 支出列表 › 檢視支出列表
   it('groups by date descending, then creation descending without mutating data', () => {
     const input = [
       existing,

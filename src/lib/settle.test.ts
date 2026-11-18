@@ -11,6 +11,7 @@ import {
 const members = ['bear', 'cat', 'penguin', 'fox']
 
 describe('balances', () => {
+  // @scenario 依幣別計算淨額 › 單一幣別淨額
   test('single currency: bear +500, cat -100, penguin -400 (spec scenario)', () => {
     const three = ['bear', 'cat', 'penguin']
     const result = balances(
@@ -24,6 +25,7 @@ describe('balances', () => {
     expect(Object.fromEntries(result.get('JPY')!)).toEqual({ bear: 500, cat: -100, penguin: -400 })
   })
 
+  // @scenario 依幣別計算淨額 › 混用幣別不抵銷
   test('currencies never offset each other', () => {
     const result = balances(
       members,
@@ -39,6 +41,7 @@ describe('balances', () => {
     expect(result.get('TWD')!.get('cat')).toBe(500)
   })
 
+  // @scenario 平均分攤 › 部分成員分攤
   test('splitters can exclude the payer', () => {
     const result = balances(
       members,
@@ -53,6 +56,7 @@ describe('balances', () => {
     })
   })
 
+  // @scenario 平均分攤 › 無法整除
   test('rounding remainder follows member order, not splitAmong order', () => {
     const result = balances(
       members,
@@ -75,6 +79,7 @@ describe('balances', () => {
 })
 
 describe('suggestTransfers', () => {
+  // @scenario 最少轉帳建議 › 產生轉帳建議
   test('spec scenario: bear +200, cat -100, penguin -100', () => {
     const net: NetByMember = new Map([
       ['bear', 200],
@@ -87,6 +92,7 @@ describe('suggestTransfers', () => {
     ])
   })
 
+  // @scenario 最少轉帳建議 › 已經結清
   test('settled currency produces no transfers', () => {
     expect(
       suggestTransfers(
@@ -98,6 +104,7 @@ describe('suggestTransfers', () => {
     ).toEqual([])
   })
 
+  // @scenario 最少轉帳建議 › 產生轉帳建議
   test('applying the suggestions zeroes every balance with at most n-1 transfers', () => {
     // Deterministic pseudo-random trips.
     let seed = 42
@@ -136,10 +143,12 @@ describe('totals and all-settled', () => {
     { amount: 42000, currency: 'TWD', paidBy: 'fox', splitAmong: members },
   ]
 
+  // @scenario 旅程總花費 › 混用幣別總花費
   test('total spending is listed per currency', () => {
     expect(Object.fromEntries(totalSpending(expenses))).toEqual({ JPY: 128400, TWD: 42000 })
   })
 
+  // @scenario 全部結清 › 結清
   test('all settled only when every currency is zero and there is an expense', () => {
     expect(isAllSettled(0, new Map())).toBe(false)
     expect(isAllSettled(2, balances(members, expenses, []))).toBe(false)
