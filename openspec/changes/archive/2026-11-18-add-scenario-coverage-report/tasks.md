@@ -29,7 +29,7 @@
 ## 6. 整合驗證
 
 - [x] 6.1 本機依序執行 `npm run lint`、`npm run format:check`、`npm run build`、`npm test`、`supabase test db`、`npm run test:e2e`、`npm run scenarios`，全部通過，報告內容與 3.3 一致
-- [ ] 6.2 經使用者同意 commit 並 push 後，確認 CI 的「Scenario 對照報告」job 在 Job Summary 顯示報告、`scenario-report.md` artifact 可以下載，且「相依套件安全檢查」以外的 job 都通過
+- [x] 6.2 經使用者同意 commit 並 push 後，確認 CI 的「Scenario 對照報告」job 在 Job Summary 顯示報告、`scenario-report.md` artifact 可以下載，且「相依套件安全檢查」以外的 job 都通過
 
 ## Workflow follow-up
 
