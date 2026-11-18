@@ -21,17 +21,6 @@
 - **vite-plugin-pwa**：提供加到主畫面，並偵測新版本、挑安全的時機套用
 - **OpenSpec + Vitest／pgTAP／Playwright**：需求寫成可驗證的 Scenario，測試標註對應的 Scenario，CI 產生對照報告（目前 68 / 115 個有自動測試）
 
-## Highlights
-**問題**：Gemini 尖峰時常回 503，辨識可能要等 15 到 60 秒。使用者等不到結果，或在等待時誤觸畫面，已上傳的照片和辨識結果就會白白浪費。
-
-**解法**：
-- **Edge Function 端**：25 秒共用一個時間上限，遇到 500／503 在上限內重試一次，並分辨「服務太忙」和「單純逾時」，顯示不同的提示。
-- **前端**：辨識時切成整頁等待畫面，超過 15 秒提示可以改成手動新增。
-- **失敗或中途離開**：任何失敗都直接開啟「已附上照片」的手動新增畫面；中途離開則刪除這次上傳的照片。
-
-**結果**：拍下的收據一定會有結果，不是辨識完成，就是帶著照片進入手動輸入，不需要重拍，也不會在 Storage 留下沒有用到的照片。失敗訊息與等待畫面的行為由單元測試與 E2E 驗證。
-<!-- TODO: 若有實際數據（例如辨識成功率、平均辨識時間），補在結果中 -->
-
 ## Getting Started
 ```bash
 npm ci
@@ -39,6 +28,3 @@ cp .env.example .env.local   # 填入本機 Supabase（supabase start）的 anon
 npm run dev
 ```
 需要 Node.js 22.12+、Docker（或 OrbStack）與 Supabase CLI；本機擁有者帳號、測試與部署步驟見 [docs/development.md](docs/development.md)。
-
----
-👤 zooroy ・ [GitHub](https://github.com/zooroy)
