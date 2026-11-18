@@ -13,7 +13,7 @@
 ## 3. 整合驗證
 
 - [x] 3.1 先把 delta 同步到主規格（`scenarios:check` 讀主規格，標註與規格要在同一個 commit 更新）；`openspec validate tidy-specs --strict` 與 `openspec validate --specs --strict` 通過；本機依序執行 `npm run format:check`、`npm run scenarios:check`、`supabase test db`，全部通過，並跑 `npm run scenarios`，確認 Scenario 總數為 115、已覆蓋數為 68
-- [ ] 3.2 經使用者同意 commit 並 push 後，確認 CI 中「相依套件安全檢查」以外的 job 都通過
+- [x] 3.2 經使用者同意 commit 並 push 後，確認 CI 中「相依套件安全檢查」以外的 job 都通過
 
 ## Workflow follow-up
 
